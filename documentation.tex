@@ -9,5 +9,14 @@
 
 \begin{document}
     \maketitle
-    
+
+    A Structure from motion (SfM) folyamat segítségével 3D rekonstrukciót hajthatunk végre egy képpár segítségével. Ennek lépései:
+
+    \begin{enumerate}
+        \item Két kép közötti ritka ponthalmazok megfeleltetése (pontmegfeleltetés): az első kép sarkainak azonosítása a \textit{detectMinEigenFeatures} függvénnyel, majd azok követése a második képre a \textit{vision.PointTracker} segítségével.
+        \item Az esszenciális mátrix becslése \textit{estimateEssentialMatrix} használatával.
+        \item Kamera elmozdulásának kiszámítása \textit{estrelpose} függvénnyel.
+        \item Két kép közötti sűrű ponthalmazok megfeleltetése (pontmegfeleltetés): több pont kinyeréséhez újra kell detektálni a pontokat a \textit{detectMinEigenFeatures} függvény segítségével a \textit{'MinQuality'} opciót használva. Ezt követi a sűrű ponthalmaz követése a második képre a \textit{vision.PointTracker} használatával.
+        \item Az illeszkedő pontok 3D helyzeteinek meghatározása a \textit{triangulate} segítségével (háromszögelés).
+    \end{enumerate}    
 \end{document}
