@@ -27,7 +27,7 @@
                 \item \textit{fullfile(string1, string2, ...)} = az argumentumként kapott stringekből összeállít egy elérési útvonalat, pl.:\\\\
                     \texttt{path = fullfile('myfolder', 'mysubfolder')\\path = 'myfolder\textbackslash mysubfolder\textbackslash '}\\\\
                     \textit{toolboxdir(toolbox)} = visszaadja az argumentumként kapott toolbox abszolút elérési útvonalát.
-                \item \textit{imageDatastore(path)} = létrehoz egy ImageDatastore objektumot a kapott elérési útvonallal meghatározott képekből. Az ImageDatastore objektum segítségével egy mappában található összes képet össze lehet gyűjteni egy változó alá (de alapból nem lesz az összes kép egyszerre betöltve).
+                \item \textit{imageDatastore(path)} = létrehoz egy ImageDatastore objektumot a kapott elérési útvonallal meghatározott képekből. Az ImageDatastore objektum segítségével egy mappában található összes képet össze lehet gyűjteni egy változóba (de alapból nem lesz az összes kép egyszerre betöltve).
                 \item \textit{readimage(datastore, n)} = betölti az n. képet a megadott datastore-ból.
                 \item \textit{figure} = létrehoz egy új, üres ábra ablakot.
                 \item \textit{imshowpair(image1, image2, 'montage')} = a meghatározott két képet egymás mellé helyezi a legutolsó ábrán.
@@ -41,7 +41,22 @@
 
         \section{Lencse által okozott torzítás eltávolítása.}
             \begin{enumerate}
-                \item asd
+                \item \textit{undistortImage(image, intrinsics)} = a második argumentumként megadott kamera paramétereket felhasználva eltűnteti a kamera lencséje által okozott torzítást a megadott képről.\\
+                      A kamera kalibrációja során kapott kamera paramétereket és a torzítási együtthatókat felhasználva kiszámítjuk a bemeneti kép minden pixelének eredeti pozícióját. Az egyes pixelek pozícióját az alábbi torzítások módosítják:
+                        \begin{itemize}
+                            \item \textbf{Radiális torzítás} = kiváltó oka, hogy a lencse szélén áthaladó fény jobban törik, mint a lencse közepén környezetében áthaladó fény. Ez kiszámolható:\\
+                                \[x = x_d(1 + k_1r^2 + k_2r^4)\]
+                                \[y = y_d(1 + k_1r^2 + k_2r^4)\]
+                                Ahol $x, y$ = korrigált koordináták; $x_d, y_d$ = torzított koordináták; $k_1, k_2$ = radiális torzítási együtthatók; $r^2 = x_d^2 + y_d^2$
+                            \item \textbf{Tangenciális fordítás} = előfordul, ha a kameraszenzor és a lencse nem állnak tökéletesen párhuzamosan. Ez kiszámolható:\\
+                                \[x = 2p_1x_dy_d + p_2(r^2+2x_d^2)\]
+                                \[y = 2p_2x_dy_d + p_1(r^2 + 2y_d^2)\]
+                                Ahol $x, y$ = korrigált koordináták; $x_d, y_d$ = torzított koordináták; $p_1, p_2$ = tangenciális torzítási együtthatók; $r^2 = x_d^2 + y_d^2$
+                        \end{itemize}
             \end{enumerate}
-
+    \chapter{Forrás}
+        \begin{itemize}
+            \item https://www.mathworks.com/help/vision/ug/structure-from-motion-from-two-views.html
+            \item https://www.mathworks.com/help/visionhdl/ug/image-undistort.html
+        \end{itemize}
 \end{document}
