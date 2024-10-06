@@ -1,4 +1,4 @@
-\documentclass[10pt]{report}
+\documentclass[12pt]{report}
 
 \usepackage[utf8]{inputenc}
 \usepackage{t1enc}
@@ -10,7 +10,8 @@
 \begin{document}
     \maketitle
 
-    A Structure from motion (SfM) folyamat segítségével 3D rekonstrukciót hajthatunk végre egy képpár segítségével. Ennek lépései:
+    \chapter{Algoritmus}
+    A Structure from motion (SfM) folyamat segítségével 3D rekonstrukciót hajthatunk végre egy képpár segítségével.
 
     \begin{enumerate}
         \item Két kép közötti ritka ponthalmazok megfeleltetése (pontmegfeleltetés): az első kép sarkainak azonosítása a \textit{detectMinEigenFeatures} függvénnyel, majd azok követése a második képre a \textit{vision.PointTracker} segítségével.
@@ -19,4 +20,28 @@
         \item Két kép közötti sűrű ponthalmazok megfeleltetése (pontmegfeleltetés): több pont kinyeréséhez újra kell detektálni a pontokat a \textit{detectMinEigenFeatures} függvény segítségével a \textit{'MinQuality'} opciót használva. Ezt követi a sűrű ponthalmaz követése a második képre a \textit{vision.PointTracker} használatával.
         \item Az illeszkedő pontok 3D helyzeteinek meghatározása a \textit{triangulate} segítségével (háromszögelés).
     \end{enumerate}    
+
+    \chapter{Kód magyarázata}
+        \section{Képpár betöltése}
+            \begin{enumerate}
+                \item \textit{fullfile(string1, string2, ...)} = az argumentumként kapott stringekből összeállít egy elérési útvonalat, pl.:\\\\
+                    \texttt{path = fullfile('myfolder', 'mysubfolder')\\path = 'myfolder\textbackslash mysubfolder\textbackslash '}\\\\
+                    \textit{toolboxdir(toolbox)} = visszaadja az argumentumként kapott toolbox abszolút elérési útvonalát.
+                \item \textit{imageDatastore(path)} = létrehoz egy ImageDatastore objektumot a kapott elérési útvonallal meghatározott képekből. Az ImageDatastore objektum segítségével egy mappában található összes képet össze lehet gyűjteni egy változó alá (de alapból nem lesz az összes kép egyszerre betöltve).
+                \item \textit{readimage(datastore, n)} = betölti az n. képet a megadott datastore-ból.
+                \item \textit{figure} = létrehoz egy új, üres ábra ablakot.
+                \item \textit{imshowpair(image1, image2, 'montage')} = a meghatározott két képet egymás mellé helyezi a legutolsó ábrán.
+                \item \textit{title('string')} = hozzáad egy címet a legutolsó ábrához.
+            \end{enumerate}
+
+        \section{A Camera Calibrator alkalmazás segítségével előre kiszámolt kamera paraméterek betöltése.}
+            \begin{enumerate}
+                    \item \textit{load(file\_name.mat)} = betölti egy korábban elmentett workspace adatait a jelenlegi workspace-be. A workspace egy ideiglenes tároló amely a MATLAB elindítása óta létrehozott változókat tárolja. Alapértelmezetten a MATLAB ablak jobb oldalán látható. A workspace-t el lehet menteni, így a benne tárolt változókat később vissza lehet tölteni a MATLAB-ba.
+            \end{enumerate}
+
+        \section{Lencse által okozott torzítás eltávolítása.}
+            \begin{enumerate}
+                \item asd
+            \end{enumerate}
+
 \end{document}
