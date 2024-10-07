@@ -45,13 +45,18 @@
                       A kamera kalibrációja során kapott kamera paramétereket és a torzítási együtthatókat felhasználva kiszámítjuk a bemeneti kép minden pixelének eredeti pozícióját. Az egyes pixelek pozícióját az alábbi torzítások módosítják:
                         \begin{itemize}
                             \item \textbf{Radiális torzítás} = kiváltó oka, hogy a lencse szélén áthaladó fény jobban törik, mint a lencse közepén környezetében áthaladó fény. Ez kiszámolható:\\
-                                \[x = x_d(1 + k_1r^2 + k_2r^4)\]
-                                \[y = y_d(1 + k_1r^2 + k_2r^4)\]
-                                Ahol $x, y$ = korrigált koordináták; $x_d, y_d$ = torzított koordináták; $k_1, k_2$ = radiális torzítási együtthatók; $r^2 = x_d^2 + y_d^2$
+                                \[x_d = x_u(1 + k_1r^2 + k_2r^4)\]
+                                \[y_d = y_u(1 + k_1r^2 + k_2r^4)\]
+                                (Ahol $x_u, y_u$ = torzulásmentes koordináták; $x_d, y_d$ = torzított koordináták; $k_1, k_2$ = radiális torzítási együtthatók; $r^2 = x_u^2 + y_u^2$)
                             \item \textbf{Tangenciális fordítás} = előfordul, ha a kameraszenzor és a lencse nem állnak tökéletesen párhuzamosan. Ez kiszámolható:\\
-                                \[x = 2p_1x_dy_d + p_2(r^2+2x_d^2)\]
-                                \[y = 2p_2x_dy_d + p_1(r^2 + 2y_d^2)\]
-                                Ahol $x, y$ = korrigált koordináták; $x_d, y_d$ = torzított koordináták; $p_1, p_2$ = tangenciális torzítási együtthatók; $r^2 = x_d^2 + y_d^2$
+                                \[x_d = 2p_1x_uy_u + p_2(r^2+2x_u^2)\]
+                                \[y_d = 2p_2x_uy_u + p_1(r^2 + 2y_u^2)\]
+                                (Ahol $x_u, y_u$ = torzulásmentes koordináták; $x_d, y_d$ = torzított koordináták; $p_1, p_2$ = tangenciális torzítási együtthatók; $r^2 = x_u^2 + y_u^2$)\\\\
+                    Az egyes pixelek korrigált helyének kiszámítása nem egész számú értékeket is előállít. Mivel a nem egész szám nem lehet pixel koordináta, ezért bilineáris interpolációt is végre kell hajtani. A bilineáris interpoláció során, a legközelebbi négy szomszédot felhasználva először lineáris interpolációt hajtunk végre az egyik irányba (pl. az x tengely mentén), majd pedig a másik irányba (az y tengely mentén):
+                        \[out_P = I_1(1 - \Delta X)(1 - \Delta Y) + I_2 (\Delta X)(1 - \Delta Y) + I_3(1 - \Delta X)(\Delta Y) + I_4(\Delta X)(\Delta Y)\]
+                        (Ahol $I_1, I_2, I_3, I_4$ = a szomszédos négy koordináta intenzitása az eredeti, torzított képen; $\Delta X, \Delta Y$ = a nem egész értékű koordinátákkal rendelkező vizsgált pixel és a vizsgált pixelhez legközelebb eső, egész értékű koordinátákkal rendelkező szomszédai közötti távolság; $out_P$ = végeredményként kapott pixel intenzitás)\\\\
+                    A szomszédos pixelek efféle súlyzott átlagolásával, az interpoláció eredményeképp egy pixel intenzitás értéket kapunk, amely a legközelebbi egész érték koordinátával rendelkező pixel intenzitása lesz.\\
+                    Az előállított, torzítatlan képen néhány pixel (leginkább a kép szélein) nem rendelkezik megfelelő pixel párral az eredeti, torzított képről (ezek azok a területek, ahol az eredeti képből nincs információ). Ezek a pixelek alapértelmezetten 0 értéket kapnak (feketék lesznek). 
                         \end{itemize}
             \end{enumerate}
     \chapter{Forrás}
