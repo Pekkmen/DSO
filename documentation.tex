@@ -58,11 +58,18 @@
                     A szomszédos pixelek efféle súlyzott átlagolásával, az interpoláció eredményeképp egy pixel intenzitás értéket kapunk, amely a legközelebbi egész érték koordinátával rendelkező pixel intenzitása lesz.\\
                     Az előállított, torzítatlan képen néhány pixel (leginkább a kép szélein) nem rendelkezik megfelelő pixel párral az eredeti, torzított képről (ezek azok a területek, ahol az eredeti képből nincs információ). Ezek a pixelek alapértelmezetten 0 értéket kapnak (feketék lesznek). 
                         \end{itemize}
-            \end{enumerate}
+                \end{enumerate}
+
+            \section{Pontmegfeleltetés a képek között.}
+                \begin{enumerate}
+                    \item \textit{detectMinEigenFeatures(grayImage, MinQuality=0.1)} = a minimum sajátérték algoritmust (Shi \& Tomasi, Minimum Eigenvalue Algorithm) használva keresi meg a kép sarokpontjait (a sarokpont jelen esetben olyan pixeleket jelentenek, amelyek éles változást mutatnak a környező pixelekhez képest). Szürkeárnyalatos képet vár argumentumként, ezért a képet még előtte az \textit{im2gray} függvénnyel szürkeárnyalatosra változtatjuk. A \textit{MinQuality} argumentum a detektált sarokpontok minőségét határozza meg. Az értékének [0, 1] tartományból választhatunk. Magasabb érték, jobb minőségű, viszont kevesebb sarokpontot is eredményez.
+                \end{enumerate}
     \chapter{Forrás}
         \begin{itemize}
             \item https://www.mathworks.com/help/vision/ug/structure-from-motion-from-two-views.html
+            \item https://www.mathworks.com/help/vision/ref/undistortimage.html?s\textunderscore tid=doc\textunderscore ta
             \item https://www.mathworks.com/help/visionhdl/ug/image-undistort.html
             \item https://e-learning.ujs.sk/pluginfile.php/23441/mod\textunderscore resource/content/1/01-ProjektivKamera.pdf
+            \item https://www.mathworks.com/help/vision/ref/detectmineigenfeatures.html
         \end{itemize}
 \end{document}
