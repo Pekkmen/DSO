@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{t1enc}
 \usepackage[magyar]{babel}
+\usepackage{amsmath}
 
 \title{Structure from Motion from Two Views}
 \date{}
@@ -62,8 +63,38 @@
 
             \section{Pontmegfeleltetés a képek között.}
                 \begin{enumerate}
-                    \item \textit{detectMinEigenFeatures(grayImage, MinQuality=0.1)} = a minimum sajátérték algoritmust (Shi \& Tomasi, Minimum Eigenvalue Algorithm) használva keresi meg a kép sarokpontjait (a sarokpont jelen esetben olyan pixeleket jelentenek, amelyek éles változást mutatnak a környező pixelekhez képest). Szürkeárnyalatos képet vár argumentumként, ezért a képet még előtte az \textit{im2gray} függvénnyel szürkeárnyalatosra változtatjuk. A \textit{MinQuality} argumentum a detektált sarokpontok minőségét határozza meg. Az értékének [0, 1] tartományból választhatunk. Magasabb érték, jobb minőségű, viszont kevesebb sarokpontot is eredményez.
+                    \item \textit{detectMinEigenFeatures(grayImage, MinQuality=0.1)} = a Shi és Tomasi féle minimum sajátérték algoritmust (Shi \& Tomasi, Minimum Eigenvalue Algorithm) használva keresi meg a kép sarokpontjait (a sarokpont jelen esetben olyan pixeleket jelentenek, amelyek éles változást mutatnak a környező pixelekhez képest). Szürkeárnyalatos képet vár argumentumként, ezért a képet még előtte az \textit{im2gray} függvénnyel szürkeárnyalatosra változtatjuk. A \textit{MinQuality} argumentum a detektált sarokpontok minőségét határozza meg. Az értékének [0, 1] tartományból választhatunk. Magasabb érték, jobb minőségű, viszont kevesebb sarokpontot is eredményez.
+                    Pontmegfeleltetés esetén gyakran a sarokpontok detektálása a preferált módszer, ugyanis a sarokpontok általában könnyen azonosíthatók különböző nézőpontból és stabilak (azaz kisebb elmozdulás, zaj vagy torzítás hatására is megismerhetők).\\
+                    A Shi és Tomasi féle sajátérték algoritmus a Harris sarokpont detektáló algoritmuson alapszik. A Harris sarokpont detektáló algoritmus esetén első lépésben meghatározunk egy csúszóablakot a vizsgált képen. Ha azt tapasztaljuk, hogy ezt az ablakot bármelyik irányba is mozgassuk el, nagy lesz a különbség az ablak erdeti pozíciója alatti terület és az elmozdított ablak új pozíciója alatti terület között, akkor sikeresen detektáltunk egy sarokpontot. Ezt a változást az alábbi képlet szerint mérjük:
+                    \[E(u,v) = \sum_{x,y}w(x,y)[I(x+u,y+v) - I(x,y)]^2\]
+                    Ahol:\\ 
+                    \begin{itemize}
+                        \item \textit{E} = a négyzetkülönbség a csúszóablak eredeti és elmozdított pozíciója között.
+                        \item \textit{u} = a csúszóablak elmozdításának értéke az x tengely mentén.
+                        \item \textit{v} = a csúszóablak elmozdításának értéke az y tengely mentén.
+                        \item \textit{w(x,y)} = a csúszóablak az (x,y) pozíción
+                        \item \textit{I} = a kép intenzitása a zárójelekben meghatározott pozíción, pl:
+                            \begin{itemize}
+                                \item \textit{I(x,y)} = az ablak eredeti pozíciója alatti terület intenzitása.
+                                \item \textit{I(x+u,y+v)} = az elmozgatott ablak alatti terület intenzitása.
+                            \end{itemize}
+                    \end{itemize}
                 \end{enumerate}
+                A cél olyan csúszóablakokat találni, ahol ez az E érték nagy, bármelyik irányba is toljuk el az ablakot. Azaz olyan pozíció kell, ahol (a képletben) a szögletes zárójelben található kifejezés értéke nagy. Tehát a 
+                \[\sum_{x,y}[I(x+u,y+v) - I(x,y)]^2\]
+                részt kell maximalizálni. Ehhez először Taylor-sort alkalmazunk, amely után az alábbi egyenletet kapjuk (ezek után már csak közelítő eredményt kapunk):
+                \[E(u,v) \approx \sum_{x,y}[I(x,y) + ul_x + vl_y - I(x,y)]^2\]
+                A \textit{I(x,y) - I(x,y)} rész kiüti egymást, majd a elvégezzük a négyzetre emelést ($(a+b)^2 = a^2 + 2ab + b^2$):
+                \[E(u,v) \approx \sum_{x,y}u^2l_x^2 + 2uvl_xl_y + v^2l_y^2\]
+                Ezt mátrixá alakítjuk:
+                \[E(u,v) \approx \begin{bmatrix} u & v \end{bmatrix} (\sum \begin{bmatrix} l_x^2 & l_xl_y \\ l_xl_y & l_y^2 \end{bmatrix}) \begin{bmatrix} u \\ v \end{bmatrix}\]
+                A mátrixot (talán második momentum mátrixnak hívják) \textit{M} betűvel fogjuk jelezni és a \textit{w(x,y)} is csodával határos módon visszakerült:
+                \[M = \sum w(x,y)\begin{bmatrix} l_x^2 & l_xl_y \\ l_xl_y & l_y^2 \end{bmatrix}\]
+                Az \textit{M}-et behelyettesítve:
+                \[E(u,v) \approx \begin{bmatrix} u & v \end{bmatrix} M \begin{bmatrix} u \\ v \end{bmatrix}\]
+                To be continued...\\
+                \texttt{https://docs.opencv.org/3.4/dc/d0d/tutorial\_py\_features\_harris.html}\\
+                \texttt{https://aishack.in/tutorials/harris-corner-detector/}
     \chapter{Forrás}
         \begin{itemize}
             \item https://www.mathworks.com/help/vision/ug/structure-from-motion-from-two-views.html
@@ -71,5 +102,9 @@
             \item https://www.mathworks.com/help/visionhdl/ug/image-undistort.html
             \item https://e-learning.ujs.sk/pluginfile.php/23441/mod\textunderscore resource/content/1/01-ProjektivKamera.pdf
             \item https://www.mathworks.com/help/vision/ref/detectmineigenfeatures.html
+            \item https://aishack.in/tutorials/features/
+            \item https://aishack.in/tutorials/harris-corner-detector/
+            \item https://aishack.in/tutorials/shitomasi-corner-detector/
+            \item https://docs.opencv.org/3.4/dc/d0d/tutorial\textunderscore py\textunderscore features\textunderscore harris.html
         \end{itemize}
 \end{document}
