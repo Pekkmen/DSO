@@ -79,22 +79,42 @@
                                 \item \textit{I(x+u,y+v)} = az elmozgatott ablak alatti terület intenzitása.
                             \end{itemize}
                     \end{itemize}
+                    A cél olyan csúszóablakokat találni, ahol ez az E érték nagy, bármelyik irányba is toljuk el az ablakot. Azaz olyan pozíció kell, ahol (a képletben) a szögletes zárójelben található kifejezés értéke nagy. Tehát a 
+                    \[\sum_{x,y}[I(x+u,y+v) - I(x,y)]^2\]
+                    részt kell maximalizálni. Ehhez először Taylor-sort alkalmazunk, amely után az alábbi egyenletet kapjuk (ezek után már csak közelítő eredményt kapunk):
+                    \[E(u,v) \approx \sum_{x,y}[I(x,y) + ul_x + vl_y - I(x,y)]^2\]
+                    A \textit{I(x,y) - I(x,y)} rész kiüti egymást, majd a elvégezzük a négyzetre emelést ($(a+b)^2 = a^2 + 2ab + b^2$):
+                    \[E(u,v) \approx \sum_{x,y}u^2l_x^2 + 2uvl_xl_y + v^2l_y^2\]
+                    Ezt mátrixá alakítjuk:
+                    \[E(u,v) \approx \begin{bmatrix} u & v \end{bmatrix} (\sum \begin{bmatrix} l_x^2 & l_xl_y \\ l_xl_y & l_y^2 \end{bmatrix}) \begin{bmatrix} u \\ v \end{bmatrix}\]
+                    A mátrixot (talán második momentum mátrixnak hívják és a kép intenzitásának változását méri az x és y irányokban) \textit{M} betűvel fogjuk jelezni és a \textit{w(x,y)} is csodával határos módon visszakerült:
+                    \[M = \sum w(x,y)\begin{bmatrix} l_x^2 & l_xl_y \\ l_xl_y & l_y^2 \end{bmatrix}\]
+                    Az \textit{M}-et behelyettesítve:
+                    \[E(u,v) \approx \begin{bmatrix} u & v \end{bmatrix} M \begin{bmatrix} u \\ v \end{bmatrix}\]
+                    Az így kapott \textit{E} értékből meg tudjuk mondani, hogy jelentős változás van-e a csúszóablak eredeti, valamint elmozdított pozíciója alatti terület között. Ha az intenzitásváltozás jelentős, akkor az alábbi képlettel döntjük el, hogy az adott ablak tartalmaz-e sarokpontot:
+                    \[R = det(M) - k(trace(M))^2\]
+                    Ahol:
+                    \begin{itemize}
+                        \item \textit{det(M)} = amely a második momentum mátrix determinánsát hazározza meg. Megadja, hogy mekkora az intenzitásváltozás mértéke mindkét irányban. Értéke: \textit{$det(M) = \lambda_1\lambda_2$}, ahol $\lambda_{1,2}$ az \textit{M} mátrix sajátértékei, és megmondják, hogy a képgradiens milyen irányba, milyen mértékben változik.
+                        \item \textit{k} = egy állandó, amely a sarokpont detektálás szigorúságát határozza meg. Általában [0.04, 0.05] tartományba eső érték.
+                        \item \textit{trace(M)} = a mátrix nyomát adja meg, amely a főátlók, azaz a két irány intenzitásváltozásának összege. Értéke: \textit{$trace(M) = \lambda_1 + \lambda_2$}
+                    \end{itemize}
+                    Tehát az \textit{M} mátrix \textit{$\lambda_1, \lambda_2$} sajátértékeinek értéke határozza meg, hogy a vizsgált régió sarokpont, él vagy felület-e:
+                    \begin{itemize}
+                        \item Ha R > 0, akkor az adott területen sarokpont van.
+                        \item Ha R < 0, akkor az adott területen él van.
+                        \item Ha R $\approx$ 0, akkor az adott terület homogén.
+                    \end{itemize}
+
+                    A Shi és Tomasi féle minimum sajátérték algoritmus egyetlen apró változtatást hajt végre a Harris féle sarokpont detektáló algoritmuson: A sarokpontok minőségét nem a sajátértékek kombinációjával, hanem a két sajátérték közül a kisebbik sajátérték alapján határozza meg. Az \textit{R} értékét ez az algoritmus az alábbi képlet szerint számolja ki:
+                    \[R = min(\lambda_1, \lambda_2)\]
+                    Ha \textit{R} nagyobb, mint egy előre meghatározott érték, akkor a vizsgált terület sarokpontot tartalmaz.
+                    \item \textit{imshow(image, InitialMagnification = value)} = a meghatározott kép megjelenítése \textit{value}\%-os megnagyításban.
+                    \item \textit{hold on} = a következőkben végrehajtott grafikus (pl.: grafikonok kirajzolása, stb.) parancsokat a legutolsó, aktuális ábrára fogja rárajzolni.
+                    \item \textit{plot} = létrehoz kétdimenziós grafikont.
+                    \item \textit{selectStrongest(featurePoints, N)} = visszaadja az \textit{N} legerősebb jellemzőpontot a megadott \textit{featurePoints} változóból.
                 \end{enumerate}
-                A cél olyan csúszóablakokat találni, ahol ez az E érték nagy, bármelyik irányba is toljuk el az ablakot. Azaz olyan pozíció kell, ahol (a képletben) a szögletes zárójelben található kifejezés értéke nagy. Tehát a 
-                \[\sum_{x,y}[I(x+u,y+v) - I(x,y)]^2\]
-                részt kell maximalizálni. Ehhez először Taylor-sort alkalmazunk, amely után az alábbi egyenletet kapjuk (ezek után már csak közelítő eredményt kapunk):
-                \[E(u,v) \approx \sum_{x,y}[I(x,y) + ul_x + vl_y - I(x,y)]^2\]
-                A \textit{I(x,y) - I(x,y)} rész kiüti egymást, majd a elvégezzük a négyzetre emelést ($(a+b)^2 = a^2 + 2ab + b^2$):
-                \[E(u,v) \approx \sum_{x,y}u^2l_x^2 + 2uvl_xl_y + v^2l_y^2\]
-                Ezt mátrixá alakítjuk:
-                \[E(u,v) \approx \begin{bmatrix} u & v \end{bmatrix} (\sum \begin{bmatrix} l_x^2 & l_xl_y \\ l_xl_y & l_y^2 \end{bmatrix}) \begin{bmatrix} u \\ v \end{bmatrix}\]
-                A mátrixot (talán második momentum mátrixnak hívják) \textit{M} betűvel fogjuk jelezni és a \textit{w(x,y)} is csodával határos módon visszakerült:
-                \[M = \sum w(x,y)\begin{bmatrix} l_x^2 & l_xl_y \\ l_xl_y & l_y^2 \end{bmatrix}\]
-                Az \textit{M}-et behelyettesítve:
-                \[E(u,v) \approx \begin{bmatrix} u & v \end{bmatrix} M \begin{bmatrix} u \\ v \end{bmatrix}\]
-                To be continued...\\
-                \texttt{https://docs.opencv.org/3.4/dc/d0d/tutorial\_py\_features\_harris.html}\\
-                \texttt{https://aishack.in/tutorials/harris-corner-detector/}
+
     \chapter{Forrás}
         \begin{itemize}
             \item https://www.mathworks.com/help/vision/ug/structure-from-motion-from-two-views.html
