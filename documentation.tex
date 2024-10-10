@@ -134,7 +134,20 @@
                         \item \textit{$I_t$} = az intentizás idő szerinti változása.
                     \end{itemize}
                     Tehát, ha az \textit{u} és \textit{v} elmozdulások helyesen vannak meghatározva, akkor az intenzitások különbsége megközelítőleg 0. Azonban \textit{u} és \textit{v} ismeretlenek és meghatározásukat nehezíti a \textbf{nyílás/rekesz probléma (aperture problem)}, azaz amikor a tényleges mozgást egy kicsi rekeszen keresztül figyelve próbáljuk meghatározni. Egy objektum tényleges elmozdulásának kiszámítása nehéz, ha csak egy kis területet látunk belőle a résen keresztül.\\
-                    A Lucas-Kanade algoritmus feltételezi, hogy az optikai áramlás (\textit{u} és \textit{v}) konstans és a képen textúrázott tárgyak láthatók. 
+                    A Lucas-Kanade algoritmus feltételezi, hogy az optikai áramlás (\textit{u} és \textit{v}) konstans és a képen textúrázott tárgyak láthatók. A megfigyelt pixel kezdeti intenzitása \textit{a}, valamint a rés mögött látható tárgy elmozdítása után észlelt pixel intenzitása \textit{b}. Ezek különbsége \textit{(b - a)}, azaz az időbeli intenzitáskülönbség \textit{$I_t(x,y)$}. A \textit{(x,y)} pozíción megfigyelt pixel intenzitásváltozás \textit{$I_x(x,y)$} az x tengelyen, valamint \textit{$I_y(x,y)$} az y tengelyen. Az x tengelyen történő \textit{u} és y tengelyen történő \textit{v} elmozdulás esetén a pixel intenzitása:
+                    \[I_x(x,y)u + I_y(x,y)v = -I_t(x,y)\]
+                    Nem tudom miért negatív az $I_t$ :(\\\\
+                    Az algoritmus helyes működéséhez nem elegendő egyetlen pixelt nézni, így ezt ki kell terjeszteni egy pixelszomszédságra. Egy 3x3 szomszédság esetén az egyenlet:
+                    \[I_x(x + \Delta x, y + \Delta y)u + I_y(x + \Delta x, y + \Delta y)v = -I_t(x + \Delta x, y + \Delta y)\] ahol $\Delta x$ = -1,0,1 (a két szomszéd és a vizsgált pixel az x tengelyen), $\Delta y$ = -1,0,1 (a két szomszéd és a vizsgált pixel az y tengelyen)
+                    Tömör formában a képlet:
+                    \[S\begin{bmatrix} u \\ v \end{bmatrix} = \overset{\rightarrow}{t}\]
+                    Ahol:
+                    \begin{itemize}
+                        \item \textit{S} = 9x2 mátrix amely tartalmazza: $[I_x(x + \Delta x, y + \Delta y),  I_y(x + \Delta x, y + \Delta y]$.
+                        \item \textit{$\overset{\rightarrow}{t}$} = vektor amely tartalmazza: $-I_t(x + \Delta x, y + \Delta y)$.
+                    \end{itemize}
+                    To be continued...\\
+                    http://www.inf.fu-berlin.de/inst/ag-ki/rojas\textunderscore home/documents/tutorials/Lucas-Kanade2.pdf
                 \end{enumerate}
 
     \chapter{Forrás}
