@@ -112,7 +112,28 @@
                     \item \textit{imshow(image, InitialMagnification = value)} = a meghatározott kép megjelenítése \textit{value}\%-os megnagyításban.
                     \item \textit{hold on} = a következőkben végrehajtott grafikus (pl.: grafikonok kirajzolása, stb.) parancsokat a legutolsó, aktuális ábrára fogja rárajzolni.
                     \item \textit{plot} = létrehoz kétdimenziós grafikont.
-                    \item \textit{selectStrongest(featurePoints, N)} = visszaadja az \textit{N} legerősebb jellemzőpontot a megadott \textit{featurePoints} változóból.
+                    \item \textit{selectStrongest(featurePoints, N)} = visszaadja az \textit{N} legerősebb (talán ez az intenzitások különbségének nagyságát jelenti) jellemzőpontot (nálunk sarokpontok lesznek) a megadott \textit{featurePoints} változóból.
+                    \item \textit{tracker = vision.PointTracker(MaxBidirectionalError=value1, NumPyramidLevels=value2)} = létrehoz egy Kanade-Lucas-Tomasi (KLT) algoritmus szerint működő pontkövető objektumot.\\
+                    A KLT algoritmus kifejezetten jól működik olyan objektumok követésére, amely nem változtat alakot, valamint egyedi és részletes textúrával rendelkezik. A KLT algoritmus a Lucas-Kanade (LK) optikai áramlás becslés algoritmuson alapul. Az optikai áramlás az objetumok egy látszólagos/vizuális elmozdulása (nem feltétlenül egyezik meg a valós elmozdulással). Általános feltételezése, hogy egy objektum pixeleinek intenzitása elmozdulástól függetlenül állandó:
+                    \[I(x,y,t) = I(x + u,y + v,t + 1)\]
+                    Ahol:
+                    \begin{itemize}
+                        \item \textit{I(x,y,t)} = \textit{(x,y)} pozíción lévő pixel intenzitása \textit{t} időben
+                        \item \textit{u} = elmozdulás az x tengelyen
+                        \item \textit{v} = elmozdulás az y tengelyen
+                    \end{itemize}
+
+                    Ebből kifejezhető az optikai áramlás egyenlete Taylor sort alkalmazva:
+                    \[I(x + u,y + v,t + 1) \approx I(x,y,t) + I_xu + I_yv + I_t\]
+                    \[I(x + u,y + v,t + 1) - I(x,y,t) = I_xu + I_yv + I_t\]
+                    \[0 \approx I_xu + I_yv + I_t\]
+                    Ahol:
+                    \begin{itemize}
+                        \item \textit{$I_xu$} = az intenzitás változása az x tengelyen.
+                        \item \textit{$I_yv$} = az intenzitás változása az y tengelyen.
+                        \item \textit{$I_t$} = az intentizás idő szerinti változása.
+                    \end{itemize}
+                    Tehát, ha az \textit{u} és \textit{v} elmozdulások helyesen vannak meghatározva, akkor az intenzitások különbsége megközelítőleg 0. Azonban \textit{u} és \textit{v} ismeretlenek és meghatározásukat nehezíti a \textbf{nyílás/rekesz probléma (aperture problem)}, azaz amikor a tényleges mozgást egy kicsi rekeszen keresztül figyelve próbáljuk meghatározni. Egy objektum tényleges elmozdulásának kiszámítása nehéz, ha csak egy kis területet látunk belőle a résen keresztül. 
                 \end{enumerate}
 
     \chapter{Forrás}
@@ -126,5 +147,9 @@
             \item https://aishack.in/tutorials/harris-corner-detector/
             \item https://aishack.in/tutorials/shitomasi-corner-detector/
             \item https://docs.opencv.org/3.4/dc/d0d/tutorial\textunderscore py\textunderscore features\textunderscore harris.html
+            \item https://www.mathworks.com/help/vision/ref/vision.pointtracker-system-object.html
+            \item https://lorenzopeppoloni.com/lkttracker/
+            \item https://www.baeldung.com/cs/optical-flow-lucas-kanade-method
+            \item https://www.inf.u-szeged.hu/~kato/teaching/IpariKepfeldolgozas/08-Motion.pdf
         \end{itemize}
 \end{document}
