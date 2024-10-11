@@ -4,6 +4,7 @@
 \usepackage{t1enc}
 \usepackage[magyar]{babel}
 \usepackage{amsmath}
+\usepackage{url}
 
 \title{Structure from Motion from Two Views}
 \date{}
@@ -133,12 +134,12 @@
                         \item \textit{$I_yv$} = az intenzitás változása az y tengelyen.
                         \item \textit{$I_t$} = az intentizás idő szerinti változása.
                     \end{itemize}
-                    Tehát, ha az \textit{u} és \textit{v} elmozdulások helyesen vannak meghatározva, akkor az intenzitások különbsége megközelítőleg 0. Azonban \textit{u} és \textit{v} ismeretlenek és meghatározásukat nehezíti a \textbf{nyílás/rekesz probléma (aperture problem)}, azaz amikor a tényleges mozgást egy kicsi rekeszen keresztül figyelve próbáljuk meghatározni. Egy objektum tényleges elmozdulásának kiszámítása nehéz, ha csak egy kis területet látunk belőle a résen keresztül.\\
+                    Tehát, ha az \textit{u} és \textit{v} elmozdulások helyesen vannak meghatározva, akkor az intenzitások különbsége megközelítőleg 0. Azonban \textit{u} és \textit{v} ismeretlenek és meghatározásukat nehezíti a \textbf{nyílás/rekesz/apertúra probléma (aperture problem)}, azaz amikor a tényleges mozgást egy kicsi rekeszen keresztül figyelve próbáljuk meghatározni. Egy objektum tényleges elmozdulásának kiszámítása nehéz, ha csak egy kis területet látunk belőle a résen keresztül.\\
                     A Lucas-Kanade algoritmus feltételezi, hogy az optikai áramlás (\textit{u} és \textit{v}) konstans és a képen textúrázott tárgyak láthatók. A megfigyelt pixel kezdeti intenzitása \textit{a}, valamint a rés mögött látható tárgy elmozdítása után észlelt pixel intenzitása \textit{b}. Ezek különbsége \textit{(b - a)}, azaz az időbeli intenzitáskülönbség \textit{$I_t(x,y)$}. A \textit{(x,y)} pozíción megfigyelt pixel intenzitásváltozás \textit{$I_x(x,y)$} az x tengelyen, valamint \textit{$I_y(x,y)$} az y tengelyen. Az x tengelyen történő \textit{u} és y tengelyen történő \textit{v} elmozdulás esetén a pixel intenzitása:
                     \[I_x(x,y)u + I_y(x,y)v = -I_t(x,y)\]
                     Nem tudom miért negatív az $I_t$ :(\\\\
                     Az algoritmus helyes működéséhez nem elegendő egyetlen pixelt nézni, így ezt ki kell terjeszteni egy pixelszomszédságra. Egy 3x3 szomszédság esetén az egyenlet:
-                    \[I_x(x + \Delta x, y + \Delta y)u + I_y(x + \Delta x, y + \Delta y)v = -I_t(x + \Delta x, y + \Delta y)\] ahol $\Delta x$ = -1,0,1 (a két szomszéd és a vizsgált pixel az x tengelyen), $\Delta y$ = -1,0,1 (a két szomszéd és a vizsgált pixel az y tengelyen)
+                    \[I_x(x + \Delta x, y + \Delta y)u + I_y(x + \Delta x, y + \Delta y)v = -I_t(x + \Delta x, y + \Delta y)\] ahol $\Delta x$ = -1,0,1 (a három szomszédos pixel az x tengelyen), $\Delta y$ = -1,0,1 (a három szomszédos pixel az y tengelyen)
                     Tömör formában a képlet:
                     \[S\begin{bmatrix} u \\ v \end{bmatrix} = \overset{\rightarrow}{t}\]
                     Ahol:
@@ -146,25 +147,30 @@
                         \item \textit{S} = 9x2 mátrix amely tartalmazza: $[I_x(x + \Delta x, y + \Delta y),  I_y(x + \Delta x, y + \Delta y]$.
                         \item \textit{$\overset{\rightarrow}{t}$} = vektor amely tartalmazza: $-I_t(x + \Delta x, y + \Delta y)$.
                     \end{itemize}
-                    To be continued...\\
-                    http://www.inf.fu-berlin.de/inst/ag-ki/rojas\textunderscore home/documents/tutorials/Lucas-Kanade2.pdf
+                    Ezen két ismeretlenes egyenlet megoldása a legkisebb négyzetek módszerével történik, amihez megszorozzuk az egyenletet $S^{T}$ (én sem értem miért):
+                    \[S^{T}S\begin{bmatrix}u \\ v\end{bmatrix} = S^{T}\overset{\rightarrow}{t}\]
+                    Ebből $\begin{bmatrix}u \\ v\end{bmatrix}$ kifejezve:
+                    \[\begin{bmatrix}u \\ v\end{bmatrix} = (S^{T}S)^{-1}S^{T}\overset{\rightarrow}{t}\]
+                Röviden (ha jól fogtam fel) a Lucas-Kanade optikai áramlás becslés algoritmusa a képkockák közötti mozgást próbálja nyomon követni. Ehhez két képkockán kiválaszt egy pixelszomszédságot és azok térbeli elmozdulását elemzi. Ezután kiszámolja a pixelértékek intenzitásváltozását, amelyből próbálja kiszámolni az objektum tényleges elmozdulását. Gyorsan mozgó vagy nem ritkásan textúrázott objektumok esetén nem megbízható.\\
+                A tényleges pontmegfeleltetést a Kanade-Lucas-Tomasi (KLT) algoritmus végzi, amelyből a MATLAB vision.PointTracker függvény a pyramid KLT továbbfejlesztett verziót használja. Először minden kiválasztott jellemzőponthoz egy kis ablakot/apertúrát illeszt. A következő lépésben létrehot egy kép piramist: a kiinduló képből több szintet hoz létre, ahol az alsó szinten található a teljes (eredeti) felbontású kép, a piramis teteje felé haladva a vizsgált kép egyre kisebb felbontású verziója fog szerepelni. Ezután kiszámolja a kiválasztott pixelek elmozdulás vektorait a piramis legfelső szintjétől kezdve, az előbb tárgyalt Lucas-Kanade optikai áramlás becslés algoritmusát felhasználva. A becsült mozgásokat használva frissíti a jellemzőpontok pozicióit a következő, magasabb felbontású piramisszintent. Ezt addig folytatja, amíg el nem éri a legalsó szintet. Az alacsonyabb felbontású képeken végzett kezdeti nyomkövetés csökkenti a számítási igényt és javítja a nyomkövetési pontosságot. 
                 \end{enumerate}
 
     \chapter{Forrás}
         \begin{itemize}
-            \item https://www.mathworks.com/help/vision/ug/structure-from-motion-from-two-views.html
-            \item https://www.mathworks.com/help/vision/ref/undistortimage.html?s\textunderscore tid=doc\textunderscore ta
-            \item https://www.mathworks.com/help/visionhdl/ug/image-undistort.html
-            \item https://e-learning.ujs.sk/pluginfile.php/23441/mod\textunderscore resource/content/1/01-ProjektivKamera.pdf
-            \item https://www.mathworks.com/help/vision/ref/detectmineigenfeatures.html
-            \item https://aishack.in/tutorials/features/
-            \item https://aishack.in/tutorials/harris-corner-detector/
-            \item https://aishack.in/tutorials/shitomasi-corner-detector/
-            \item https://docs.opencv.org/3.4/dc/d0d/tutorial\textunderscore py\textunderscore features\textunderscore harris.html
-            \item https://www.mathworks.com/help/vision/ref/vision.pointtracker-system-object.html
-            \item https://lorenzopeppoloni.com/lkttracker/
-            \item https://www.baeldung.com/cs/optical-flow-lucas-kanade-method
-            \item https://www.inf.u-szeged.hu/~kato/teaching/IpariKepfeldolgozas/08-Motion.pdf
-            \item http://www.inf.fu-berlin.de/inst/ag-ki/rojas\textunderscore home/documents/tutorials/Lucas-Kanade2.pdf
+            \item \url{https://www.mathworks.com/help/vision/ug/structure-from-motion-from-two-}\\\url{views.html}
+            \item \url{https://www.mathworks.com/help/vision/ref/undistortimage.html?s_tid=doc_ta}
+            \item \url{https://www.mathworks.com/help/visionhdl/ug/image-undistort.html}
+            \item \url{https://e-learning.ujs.sk/pluginfile.php/23441/mod_resource/content/1/01-ProjektivKamera.pdf}
+            \item \url{https://www.mathworks.com/help/vision/ref/detectmineigenfeatures.html}
+            \item \url{https://aishack.in/tutorials/features/}
+            \item \url{https://aishack.in/tutorials/harris-corner-detector/}
+            \item \url{https://aishack.in/tutorials/shitomasi-corner-detector/}
+            \item \url{https://docs.opencv.org/3.4/dc/d0d/tutorial_py_features_harris.html}
+            \item \url{https://www.mathworks.com/help/vision/ref/vision.pointtracker-system-object.html}
+            \item \url{https://lorenzopeppoloni.com/lkttracker/}
+            \item \url{https://www.baeldung.com/cs/optical-flow-lucas-kanade-method}
+            \item \url{https://www.inf.u-szeged.hu/~kato/teaching/IpariKepfeldolgozas/08-Motion.pdf}
+            \item \url{http://www.inf.fu-berlin.de/inst/ag-ki/rojas_home/documents/tutorials/Lucas-Kanade2.pdf}
+            \item \url{https://link.springer.com/chapter/10.1007/978-3-319-29451-3_29}
         \end{itemize}
 \end{document}
