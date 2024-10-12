@@ -5,6 +5,8 @@
 \usepackage[magyar]{babel}
 \usepackage{amsmath}
 \usepackage{url}
+\usepackage{graphicx}
+\graphicspath{ {./latex_images} }
 
 \title{Structure from Motion from Two Views}
 \date{}
@@ -135,7 +137,7 @@
                         \item \textit{$I_t$} = az intentizás idő szerinti változása.
                     \end{itemize}
                     Tehát, ha az \textit{u} és \textit{v} elmozdulások helyesen vannak meghatározva, akkor az intenzitások különbsége megközelítőleg 0. Azonban \textit{u} és \textit{v} ismeretlenek és meghatározásukat nehezíti a \textbf{nyílás/rekesz/apertúra probléma (aperture problem)}, azaz amikor a tényleges mozgást egy kicsi rekeszen keresztül figyelve próbáljuk meghatározni. Egy objektum tényleges elmozdulásának kiszámítása nehéz, ha csak egy kis területet látunk belőle a résen keresztül.\\
-                    A Lucas-Kanade algoritmus feltételezi, hogy az optikai áramlás (\textit{u} és \textit{v}) konstans és a képen textúrázott tárgyak láthatók. A megfigyelt pixel kezdeti intenzitása \textit{a}, valamint a rés mögött látható tárgy elmozdítása után észlelt pixel intenzitása \textit{b}. Ezek különbsége \textit{(b - a)}, azaz az időbeli intenzitáskülönbség \textit{$I_t(x,y)$}. A \textit{(x,y)} pozíción megfigyelt pixel intenzitásváltozás \textit{$I_x(x,y)$} az x tengelyen, valamint \textit{$I_y(x,y)$} az y tengelyen. Az x tengelyen történő \textit{u} és y tengelyen történő \textit{v} elmozdulás esetén a pixel intenzitása:
+                    A Lucas-Kanade algoritmus feltételezi, hogy az optikai áramlás (\textit{u} és \textit{v}) konstans és a képen textúrázott tárgyak láthatók. A megfigyelt pixel kezdeti intenzitása \textit{a}, valamint a rés mögött látható tárgy elmozdítása után észlelt pixel intenzitása \textit{b}. Ezek különbsége \textit{(b - a)}, azaz az időbeli intenzitáskülönbség \textit{$I_t(x,y)$}. A \textit{(x,y)} pozíción megfigyelt pixel intenzitásváltozás \textit{$I_x(x,y)$} az x tengelyen, valamint \textit{$I_y(x,y)$} az y tengelyen. Az x tengelyen történő \textit{u} mértékű és az y tengelyen történő \textit{v} mértékű elmozdulás esetén a pixel intenzitása:
                     \[I_x(x,y)u + I_y(x,y)v = -I_t(x,y)\]
                     Nem tudom miért negatív az $I_t$ :(\\\\
                     Az algoritmus helyes működéséhez nem elegendő egyetlen pixelt nézni, így ezt ki kell terjeszteni egy pixelszomszédságra. Egy 3x3 szomszédság esetén az egyenlet:
@@ -164,8 +166,30 @@
                     \item \textit{matchedPoints = imagePoints(validIdx, :)} = a megbízhatóan követhető pontok lementése. Az \textit{imagePoints} egy mátrix, melynek sorai tartalmazzák a jellemzőpontokat, két oszlopai pedig a jellemzőpontok x és y koordinátáit. A \textit{imagePoints(validIdx, :)} rész egy mátrix címzés, amely visszaadja mátrix azon sorait ahol \textit{validIdx} = \textit{1} vagy \textit{true}, valamint a mátrix összes oszlopát (: jelentése összes index).
                     \item \textit{showMatchedFeatures(image1, image2, matchedPoints1, matchedPoints2)} = a pontmegfeleltetés eredményének kirajzolása. A két agumentumként kapott kép színkódolást kap, valamint a másik két, argumentumként kapott jellemzőpontok is kirajzolódnak és egy vonallal lesznek összekötve a hozzájuk tartozó párjukkal.
                     \item \textit{[returnValue1, returnValue2] = estimateEssentialMatrix(matchedPoints1, matchedPoints2, intrinsics)} = az esszenciális mátrix becslése egy képpár megfeleltetett pontjaiból.\\
-                    Az esszenciális mátrix két kamera közötti mozgást kapcsolja össze, megfeleltetett pontpárok közötti geometriai kapcsolatok leírásával. Tehát a különböző szögből készült képekhez használt kamerák relatív helyzetét és orientációját segít meghatározni, \textbf{ha} ismertek a kamera paraméterek (amiket a kamera kalibrációjakor kapunk meg).\\
-                    Az esszenciális mátrix egy 3x3 szerkezetű, homogén, 2-es rangú mátrix.
+                    Az esszenciális mátrix két kamera közötti mozgást kapcsolja össze, megfeleltetett pontpárok közötti geometriai kapcsolatok leírásával. Tehát a különböző szögből készült képekhez használt kamerák relatív helyzetét (de tényleges távolságot viszont nem ad meg!) és orientációját segít meghatározni, \textbf{ha} ismertek a kamera paraméterek (amiket a kamera kalibrációjakor kapunk meg).\\
+                    Az esszenciális mátrix egy 3x3 szerkezetű, homogén, 2-es rangú mátrix, amely az alábbi alapján írja le a két képkocka közötti kapcsolatot (\textit{koplanaritási egyenlet}):
+                    \[x_1^TEx_2 = 0\]
+                    Az $x_1$ egy adott pont homogén koordinátája az első képen, míg az $x_2$ ugyanazon pont homogén koordinátája a második képen (mindkét esetben a kamera koordináta rendszerében, nem pedig pixel koordináta rendszerben):
+                    \[x_1 = \begin{bmatrix}x_1\\y_1\\1\end{bmatrix}, x_2 = \begin{bmatrix}x_2\\y_2\\1\end{bmatrix}\]
+                    A két képpont kapcsolatát leíró egyenlőség szerint, ha a két képpont ugyanazon pontot írják le, akkor az esszenciális mátrix ($E$) segítségével kifejezhető a köztük lévő kapcsolat. A képlet szétbontva:\\
+                    \[\begin{bmatrix}x_1&y_1&1\end{bmatrix}\begin{bmatrix}F_{11}&F_{12}&F_{13}\\F_{21}&F_{22}&F_{23}\\F_{31}&F_{32}&F_{33}\end{bmatrix}\begin{bmatrix}x_2\\y_2\\1\end{bmatrix} = 0\]
+                        \hspace{3cm} $\overset{\uparrow}{ismert}$ \hspace{1cm} $\overset{\uparrow}{ismeretlen}$ \hspace{0.1cm} $\overset{\uparrow}{ismert}$\\
+                    Ha elvégezzük az ismert elemek szorzatát, majd szétválasztjuk az ismeretlen az ismert részektől:
+                    \[A\begin{bmatrix}F_{11}\\\vdots\\F_{33}\end{bmatrix} = 0\]
+                    Ezt szinguláris érték felbontással végezhetjük el, megkapva az esszenciális mátrixot. Ezt a módszert 8 pont algoritmusnak hívják, amely minimum 8 pontpárt és normalizált koordinátákat követel meg.
+                    Az esszenciális mátrix két alapvető elemből áll:
+                    \[E = [t]_xR\]
+                    Ahol:
+                    \begin{itemize}
+                        \item \textit{R} = egy ortogonális 3x3-as rotációs mátrix amely a kamerák közötti forgást írja le: $R = \begin{bmatrix}r_{11}&r_{12}&r_{13}\\r_{21}&r_{22}&r_{23}\\r_{31}&r_{32}&r_{33}\end{bmatrix}$
+                        \item \textit{[$t_x$]} = a \textit{t} egy transzlációs vektor, amely a kamera két pozíciójának közötti eltolást írja le: $t = \begin{bmatrix}t_x\\t_y\\t_z\end{bmatrix}$. \textit{[$t_x$]} = a transzlációs vektor ferde mátrixa (\textit{skew-symmetric matrix}, én sem tudom mi az), amely biztosítja, hogy a vektorok közötti keresztszorzat mátrixművelettel leírható legyen: $[t]_x = \begin{bmatrix}0&-t_z&t_y\\t_z&0&-t_x\\-t_y&t_x&0\end{bmatrix}$\\
+                    \end{itemize}
+                    Ez a rész valószínűleg erősen hiányos, de nem teljesen értem, hogy hogyan történik az esszenciális mátrix becslése.\\
+                    A második visszatérési érték az \textit{epipolarInliers} megadja, hogy a megfeleltetett pontok mennyire esnek közel az epipoláris síkhoz. (Ha jól értelmeztem) az epipoláris sík magyarázata:\\
+                    \includegraphics[scale=0.4]{epipolar_line.jpg}
+                    Az X pontról készítünk egy-egy képet két különböző szemszögből (a kamera középpontja az első pozícióban $C_1$, míg a második pozícióban lévő kamera középpontja $C_2$). Az első képen az X pont $x_1$ pontban, míg a második képen $x_2$ pontban lett megörökítve. Ha húzunk egy vonalat a $C_1$ középpontból a képen szereplő $x_1$ ponton túl, a vonal át fog haladni a lefényképezett X ponton, azaz az első képen $x_1$ pont a $C_1$ kameraközéppont és a lefényképezett X pont közé húzott vonalon helyezkedik el (ez a vonal az $R_1$). Ha ez a vonal látható lenne, akkor a második képen látható részlete lenne a második képhez tartozó epipoláris vonal ($L_2$). Ahogy az első képen az $x_1$ az $R_1$ vonalon helyezkedik el, úgy a második képen az $x_2$ pontnak is az $L_2$ epipoláris vonalon kell elhelyezkednie.\\
+                    A MATLAB \textit{estimateEssentialMatrix} függvény egy \textit{MSAC} elnevezésű algoritmust használ, hogy eldöntse mely pontok outlierek (az epipoláris síktól messze találhatóak) és melyek az inlierek (az epipoláris síkhoz közel találhatóak). Mivel a megfeleltetett képpontoknak az epipoláris síkon kellene elhelyezkedniük, az outlierek rosszul lettek párosítva a pontmegfeleltetés során, így ezeket kiszűrjük.
+                    \item inlierPoints = matchedPoints(epipolarInliers, :) = lementsük az epipoláris vonalhoz közel eső (tehát a valószínűleg helyesen párosított) pontokat.
                 \end{enumerate}
 
     \chapter{Forrás}
@@ -189,5 +213,6 @@
             \item \url{https://www.mathworks.com/help/vision/ref/showmatchedfeatures.html}
             \item \url{https://www.baeldung.com/cs/fundamental-matrix-vs-essential-matrix}
             \item \url{https://e-learning.ujs.sk/pluginfile.php/23450/mod_resource/content/1/05-SztereoKamera.pdf}
+            \item \url{https://learnopencv.com/introduction-to-epipolar-geometry-and-stereo-vision/}
         \end{itemize}
 \end{document}
