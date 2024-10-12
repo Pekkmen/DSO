@@ -163,9 +163,9 @@
                     \item \textit{[returnValue1, returnValue2] = step(tracker, image2)} = a \textit{step} függvény indítja el az első argumentumként kapott pontkövető objektumot. A függvény második argumentum a második képkocka, amelyen el kell végeznie a pontkövetést az objektumnak. Az első visszatérési érték a korábban meghatározott jellemzőpontok koordinátái a második képkockán. A második visszatérési érték egy logikai indexvektor, amely azt jelzi, hogy mely pontokat sikerült nyomon követni. A megbízhatóan követhető pontok \textit{true}, míg ellenkező esetben \textit{false} értéket kapnak.
                     \item \textit{matchedPoints = imagePoints(validIdx, :)} = a megbízhatóan követhető pontok lementése. Az \textit{imagePoints} egy mátrix, melynek sorai tartalmazzák a jellemzőpontokat, két oszlopai pedig a jellemzőpontok x és y koordinátáit. A \textit{imagePoints(validIdx, :)} rész egy mátrix címzés, amely visszaadja mátrix azon sorait ahol \textit{validIdx} = \textit{1} vagy \textit{true}, valamint a mátrix összes oszlopát (: jelentése összes index).
                     \item \textit{showMatchedFeatures(image1, image2, matchedPoints1, matchedPoints2)} = a pontmegfeleltetés eredményének kirajzolása. A két agumentumként kapott kép színkódolást kap, valamint a másik két, argumentumként kapott jellemzőpontok is kirajzolódnak és egy vonallal lesznek összekötve a hozzájuk tartozó párjukkal.
-                    \item \textit{[returnValue1, returnValue2] = estimateEssentialMatrix(matchedPoints1, matchedPoints2, intrinsics)} = az esszenciális mátrix becslése egy képpár megfeleltetett pontjaiból.
-                    \\To be continued...\\
-                    \url{https://www.baeldung.com/cs/fundamental-matrix-vs-essential-matrix}
+                    \item \textit{[returnValue1, returnValue2] = estimateEssentialMatrix(matchedPoints1, matchedPoints2, intrinsics)} = az esszenciális mátrix becslése egy képpár megfeleltetett pontjaiból.\\
+                    Az esszenciális mátrix két kamera közötti mozgást kapcsolja össze, megfeleltetett pontpárok közötti geometriai kapcsolatok leírásával. Tehát a különböző szögből készült képekhez használt kamerák relatív helyzetét és orientációját segít meghatározni, \textbf{ha} ismertek a kamera paraméterek (amiket a kamera kalibrációjakor kapunk meg).\\
+                    Az esszenciális mátrix egy 3x3 szerkezetű, homogén, 2-es rangú mátrix.
                 \end{enumerate}
 
     \chapter{Forrás}
