@@ -185,7 +185,7 @@
                         \item \textit{[$t_x$]} = a \textit{t} egy transzlációs vektor, amely a kamera két pozíciójának közötti eltolást írja le: $t = \begin{bmatrix}t_x\\t_y\\t_z\end{bmatrix}$. \textit{[$t_x$]} = a transzlációs vektor ferde mátrixa (\textit{skew-symmetric matrix}, én sem tudom mi az), amely biztosítja, hogy a vektorok közötti keresztszorzat mátrixművelettel leírható legyen: $[t]_x = \begin{bmatrix}0&-t_z&t_y\\t_z&0&-t_x\\-t_y&t_x&0\end{bmatrix}$\\
                     \end{itemize}
                     Ez a rész valószínűleg erősen hiányos, de nem teljesen értem, hogy hogyan történik az esszenciális mátrix becslése.\\
-                    A második visszatérési érték az \textit{epipolarInliers} megadja, hogy a megfeleltetett pontok mennyire esnek közel az epipoláris síkhoz. (Ha jól értelmeztem) az epipoláris sík magyarázata:\\
+                    A második visszatérési érték, az \textit{epipolarInliers} megadja, hogy a megfeleltetett pontok mennyire esnek közel az epipoláris síkhoz. (Ha jól értelmeztem) az epipoláris sík magyarázata:\\
                     \includegraphics[scale=0.4]{epipolar_line.jpg}
                     Az X pontról készítünk egy-egy képet két különböző szemszögből (a kamera középpontja az első pozícióban $C_1$, míg a második pozícióban lévő kamera középpontja $C_2$). Az első képen az X pont $x_1$ pontban, míg a második képen $x_2$ pontban lett megörökítve. Ha húzunk egy vonalat a $C_1$ középpontból a képen szereplő $x_1$ ponton túl, a vonal át fog haladni a lefényképezett X ponton, azaz az első képen $x_1$ pont a $C_1$ kameraközéppont és a lefényképezett X pont közé húzott vonalon helyezkedik el (ez a vonal az $R_1$). Ha ez a vonal látható lenne, akkor a második képen látható részlete lenne a második képhez tartozó epipoláris vonal ($L_2$). Ahogy az első képen az $x_1$ az $R_1$ vonalon helyezkedik el, úgy a második képen az $x_2$ pontnak is az $L_2$ epipoláris vonalon kell elhelyezkednie.\\
                     A MATLAB \textit{estimateEssentialMatrix} függvény egy \textit{MSAC} elnevezésű algoritmust használ, hogy eldöntse mely pontok outlierek (az epipoláris síktól messze találhatóak) és melyek az inlierek (az epipoláris síkhoz közel találhatóak). Mivel a megfeleltetett képpontoknak az epipoláris síkon kellene elhelyezkedniük, az outlierek rosszul lettek párosítva a pontmegfeleltetés során, így ezeket kiszűrjük.
@@ -205,7 +205,20 @@
                     \[P = K\begin{bmatrix}rigidtform3d.R|rigidtform3d.t\end{bmatrix}\]
                    
                     A mátrix tartalmazza a képre vetített 3D pontokat homogén koordinátákban.\\
-                A második kamera esetében az első kamera szerinti relatív elhelyezkedést és orientációt (\textit{relPose}) átadjuk a \textit{pose2extr} függvénynek, amely visszaadja a kamera külső paramétereit (extrinsic mátrix). A kamera külső paraméterei azt mutatják meg, hogyan kell a kamera koordináta-rendszeréből a világ koordináta-rendszerébe végrehajtani a transzformációt. Ez azt jelenti, hogy ha van egy pont a kamera koordináta-rendszerében, akkor a \textit{pose2extr} által visszaadott extrinsic mátrix segítségével átalakíthatjuk ezt a pontot a világ koordináta-rendszerébe. Innentől fogva a \textit{cameraProjection} függvény a belső és külső paramétereket felhasználva leírja a második kamerához tartozó kamera vetítési mátrixot. (Nem tudom mennyire helyes ez a bekezdés).
+                    A második kamera esetében az első kamera szerinti relatív elhelyezkedést és orientációt (\textit{relPose}) átadjuk a \textit{pose2extr} függvénynek, amely visszaadja a kamera külső paramétereit (extrinsic mátrix). A kamera külső paraméterei azt mutatják meg, hogyan kell a kamera koordináta-rendszeréből a világ koordináta-rendszerébe végrehajtani a transzformációt. Ez azt jelenti, hogy ha van egy pont a kamera koordináta-rendszerében, akkor a \textit{pose2extr} által visszaadott extrinsic mátrix segítségével átalakíthatjuk ezt a pontot a világ koordináta-rendszerébe. Innentől fogva a \textit{cameraProjection} függvény a belső és külső paramétereket felhasználva leírja a második kamerához tartozó kamera vetítési mátrixot. (Nem tudom mennyire helyes ez a bekezdés).
+                    \item \textit{triangulate(matchedPoints1, matchedPoints2, camProjection1, camProjection2)} = Az argumentumként kapott pontpárok és kamera vetítési mátrixok segítségével háromszögelést végez. Visszatérési értéke a megfeleltetett pontpárok világkoordináta-rendszerbeli koordinátái.\\
+                    Az előző pontokban említettük, hogy a kamera mátrix megadja a 3D pont képsíkra történő 2D leírását:
+                    \[x = PX\]
+                Mivel ismert az \textit{x} és a \textit{P} elméletben ebből az X könnyen meghatározható:\\
+                    \includegraphics[scale=0.4]{triangulation.png}
+                    \begin{itemize}
+                        \item \textit{C} = az első kamera középpontja.
+                        \item \textit{C'} = a második kamera középpontja.
+                        \item \textit{x} = az első kamera \textit{X} objektumról készített leképezése az első képsíkra.
+                        \item \textit{x'} = a második kamera \textit{X} objektumról készített leképezése a második képsíkra.
+                        \item \textit{X} = az eredeti 3D objektum.
+                    \end{itemize}
+                    Elméletben tehát ha húzunk egy vetítősugarat az első kamera középpontjából kezdve, át az \textit{x} ponton, valamint húzunk még egy vetítősugarat a második kamera középpontjától kezdve, át az \textit{x'} ponton, a két egyenes metszéspontja meg kell határoznia \textit{X} pontot. A probléma, hogy ehhez tökéletes mérések kellenek, a valóságban viszont a különböző zajok és mérési pontatlanságok miatt  a két vetítősugár nem fogja metszeni egymást. Ennek következtében a valóságban csak közelítő eredményt keresünk.
                 \end{enumerate}
 
     \chapter{Forrás}
@@ -236,5 +249,7 @@
             \item \url{https://www.cs.cmu.edu/~16385/s17/Slides/11.1_Camera_matrix.pdf}
             \item \url{https://www.mathworks.com/help/images/ref/rigidtform3d.html}
             \item \url{https://www.storyofmathematics.com/rigid-transformation/}
+            \item \url{https://staff.fnwi.uva.nl/r.vandenboomgaard/ComputerVision/LectureNotes/CV/StereoVision/triangulation.html}
+            \item \url{https://www.cs.cmu.edu/~16385/s17/Slides/11.4_Triangulation.pdf}
         \end{itemize}
 \end{document}
