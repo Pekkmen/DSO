@@ -190,8 +190,22 @@
                     Az X pontról készítünk egy-egy képet két különböző szemszögből (a kamera középpontja az első pozícióban $C_1$, míg a második pozícióban lévő kamera középpontja $C_2$). Az első képen az X pont $x_1$ pontban, míg a második képen $x_2$ pontban lett megörökítve. Ha húzunk egy vonalat a $C_1$ középpontból a képen szereplő $x_1$ ponton túl, a vonal át fog haladni a lefényképezett X ponton, azaz az első képen $x_1$ pont a $C_1$ kameraközéppont és a lefényképezett X pont közé húzott vonalon helyezkedik el (ez a vonal az $R_1$). Ha ez a vonal látható lenne, akkor a második képen látható részlete lenne a második képhez tartozó epipoláris vonal ($L_2$). Ahogy az első képen az $x_1$ az $R_1$ vonalon helyezkedik el, úgy a második képen az $x_2$ pontnak is az $L_2$ epipoláris vonalon kell elhelyezkednie.\\
                     A MATLAB \textit{estimateEssentialMatrix} függvény egy \textit{MSAC} elnevezésű algoritmust használ, hogy eldöntse mely pontok outlierek (az epipoláris síktól messze találhatóak) és melyek az inlierek (az epipoláris síkhoz közel találhatóak). Mivel a megfeleltetett képpontoknak az epipoláris síkon kellene elhelyezkedniük, az outlierek rosszul lettek párosítva a pontmegfeleltetés során, így ezeket kiszűrjük.
                     \item \textit{inlierPoints = matchedPoints(epipolarInliers, :)} = lementsük az epipoláris vonalhoz közel eső (tehát a valószínűleg helyesen párosított) pontokat.
-                    \item \textit{estrelpose(essentialMatrix,intrinsics,inlierPoints1,inlierPoints2)} = kiszámítja a két kamera relatív pozícióját az esszenciális mátrixból kinyert rotációs mátrix és transzlációs vektor alapján. Nem találtam meg, hogy pontosan hogyan teszi ezt :(
+                    \item \textit{estrelpose(essentialMatrix,intrinsics,inlierPoints1,inlierPoints2)} = kiszámítja a második kamera relatív pozícióját az elsőhöz képest az esszenciális mátrixból kinyert rotációs mátrix és transzlációs vektor alapján. Nem találtam meg, hogy pontosan hogyan teszi ezt :(
                     \item \textit{camProjection = cameraProjection(intrinsics,tform)} = a visszatérési értéke egy kamera vetítési mátrix. Homogén koordinátával rendelkező, 3D pontok képre való vetítésére szolgál az argumentumként kapott \textit{tform} transzformáció szerint, valamint a kamera belső paramétereit is figyelembe véve.\\
+                    A vetítési mátrix egy 3x4 szerkezetű mátrix, amely leírja a kamera valóvilágbéli, 3D pontok leképezését 2D pontokra a képsíkra/elkészült képre:
+                    \[x = PX\]
+                    Ahol:
+                    \begin{itemize}
+                        \item \textit{x} = 2D képpont = $\begin{bmatrix}X\\Y\\Z\end{bmatrix}$
+                            \item \textit{P} = kamera mátrix = $K\begin{bmatrix}R|t\end{bmatrix}$, ahol \textit{K} = a kamera belső paraméterei, \textit{R} = rotációs mátrix, \textit{t} = transzlációs mátrix.
+                            \item \textit{X} = 3D pont a valóvilágban = $\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}$
+                    \end{itemize}
+                    Az alkalmazott merev transzformáció (\textit{rigidtform3d}) egy olyan transzformáció, amelybe beletartozik a forgatás és eltolás, de nem változtatja meg az objektum méretét és formáját. Ha nem adunk meg semmilyen argumentumot, akkor a \textit{rigidtform3d} egy identitás transzformációt hajt végre, amely semmilyen módon nem változtatja meg az objektumot a leképezés során (forgatást és eltolást is beleértve). Mivel az első kamera a referenciapontunk (tehát az első kamera az origón található), ezért csak egységtranszformációt hajtunk végre.
+                    A kamera mátrix kiszámítása a meghatározott transzformációval:
+                    \[P = K\begin{bmatrix}rigidtform3d.R|rigidtform3d.t\end{bmatrix}\]
+                   
+                    A mátrix tartalmazza a képre vetített 3D pontokat homogén koordinátákban.\\
+                A második kamera esetében az első kamera szerinti relatív elhelyezkedést és orientációt (\textit{relPose}) átadjuk a \textit{pose2extr} függvénynek, amely visszaadja a kamera külső paramétereit (extrinsic mátrix). A kamera külső paraméterei azt mutatják meg, hogyan kell a kamera koordináta-rendszeréből a világ koordináta-rendszerébe végrehajtani a transzformációt. Ez azt jelenti, hogy ha van egy pont a kamera koordináta-rendszerében, akkor a \textit{pose2extr} által visszaadott extrinsic mátrix segítségével átalakíthatjuk ezt a pontot a világ koordináta-rendszerébe. Innentől fogva a \textit{cameraProjection} függvény a belső és külső paramétereket felhasználva leírja a második kamerához tartozó kamera vetítési mátrixot. (Nem tudom mennyire helyes ez a bekezdés).
                 \end{enumerate}
 
     \chapter{Forrás}
@@ -218,5 +232,9 @@
             \item \url{https://learnopencv.com/introduction-to-epipolar-geometry-and-stereo-vision/}
             \item \url{https://www.mathworks.com/help/vision/ref/estrelpose.html}
             \item \url{https://www.mathworks.com/help/vision/ref/cameraprojection.html}
+            \item \url{https://ksimek.github.io/2012/08/14/decompose/}
+            \item \url{https://www.cs.cmu.edu/~16385/s17/Slides/11.1_Camera_matrix.pdf}
+            \item \url{https://www.mathworks.com/help/images/ref/rigidtform3d.html}
+            \item \url{https://www.storyofmathematics.com/rigid-transformation/}
         \end{itemize}
 \end{document}
