@@ -6,7 +6,12 @@
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{graphicx}
+
 \graphicspath{ {./latex_images} }
+
+\newcommand*{\xdash}[1][3em]{\rule[0.5ex]{#1}{0.55pt}}
+\newcommand*{\ydash}[1][0.9em]{\rule{0.55pt}{#1}}
+
 
 \title{Structure from Motion from Two Views}
 \date{}
@@ -218,7 +223,70 @@
                         \item \textit{x'} = a második kamera \textit{X} objektumról készített leképezése a második képsíkra.
                         \item \textit{X} = az eredeti 3D objektum.
                     \end{itemize}
-                    Elméletben tehát ha húzunk egy vetítősugarat az első kamera középpontjából kezdve, át az \textit{x} ponton, valamint húzunk még egy vetítősugarat a második kamera középpontjától kezdve, át az \textit{x'} ponton, a két egyenes metszéspontja meg kell határoznia \textit{X} pontot. A probléma, hogy ehhez tökéletes mérések kellenek, a valóságban viszont a különböző zajok és mérési pontatlanságok miatt  a két vetítősugár nem fogja metszeni egymást. Ennek következtében a valóságban csak közelítő eredményt keresünk.
+                    Elméletben tehát ha húzunk egy vetítősugarat az első kamera középpontjából kezdve, át az \textit{x} ponton, valamint húzunk még egy vetítősugarat a második kamera középpontjától kezdve, át az \textit{x'} ponton, a két egyenes metszéspontja meg kell határoznia \textit{X} pontot. A probléma, hogy ehhez tökéletes mérések kellenek, a valóságban viszont a különböző zajok és mérési pontatlanságok miatt  a két vetítősugár nem fogja metszeni egymást. Ennek következtében a valóságban csak közelítő eredményt keresünk. A háromszögelés lináris megoldása: \\
+                    Szétbontjuk az alábbi egyenletet:\\
+                    \[x = PX\]
+                    \[\begin{bmatrix}x\\y\\z\end{bmatrix} = 
+                        \begin{bmatrix}
+                        p_{11} & p_{12} & p_{13} & p_{14} \\
+                        p_{21} & p_{22} & p_{23} & p_{24} \\
+                        p_{31} & p_{32} & p_{33} & p_{34}
+                        \end{bmatrix}
+                        \begin{bmatrix}X\\Y\\Z\\1\end{bmatrix}\]
+                        Vesszük a P mátrix sorait és transzponáljuk:
+                        \[\begin{bmatrix}x\\y\\z\end{bmatrix} = 
+                        \begin{bmatrix}
+                        \xdash & p_{1}^T & \xdash \\
+                        \xdash & p_{2}^T & \xdash \\
+                        \xdash & p_{3}^T & \xdash
+                        \end{bmatrix}
+                        \begin{bmatrix}\ydash\\X\\\ydash\end{bmatrix}\]
+                        A mátrix egyes sorait szorozzuk az \textit{X} vektorral:
+                        \[\begin{bmatrix}x\\y\\z\end{bmatrix} =
+                        \begin{bmatrix}
+                        p_{1}^TX\\
+                        p_{2}^TX\\
+                        p_{3}^TX
+                        \end{bmatrix}\]
+                        Vesszük az egyenlőség két oldalának keresztszorzatát:
+                        \[\begin{bmatrix}x\\y\\z\end{bmatrix} \times \begin{bmatrix}
+                        p_{1}^TX\\
+                        p_{2}^TX\\
+                        p_{3}^TX
+                        \end{bmatrix} = 0\]
+                        (\textit{Két párhuzamos vektor keresztszorzata 0. Keresztszorzatot az alábbi minta szerint végzünk:
+                        \[a \times b = \begin{bmatrix} 
+                            a_2 b_3 - a_3 b_2 \\ 
+                            a_3 b_1 - a_1 b_3 \\ 
+                            a_1 b_2 - a_2 b_1 
+                            \end{bmatrix}
+                        \]})
+                        \[\begin{bmatrix}
+                        yp_3^TX - p_2^TX \\
+                        p_1^TX - xp_3^TX \\
+                        xp_2^TX - yp_1^TX
+                        \end{bmatrix} = 0\]
+                        A harmadik sor az első két sor kombinációja (az első sor \textit{x}-szer, és a második sor \textit{y}-szor), az a sor jelenleg nem jelentős, így azt elhagyjuk.\\
+                        Az eddigi eljárást megcsináljuk mindkét kamera esetében:
+                        \[\begin{bmatrix}
+                        yp_3^{T}X - p_2^{T}X \\
+                        p_1^{T}X - xp_3^{T}X \\
+                        \end{bmatrix} = 0, 
+                        \begin{bmatrix}
+                        y^{'}p_3^{'T}X - p_2^{'T}X \\
+                        p_1^{'T} - x'p_3^{'T}X \\
+                        \end{bmatrix} = 0\]
+                        A két mátrixot összeillesztjük és kiemeljük az \textit{X}-et:
+                        \[\begin{bmatrix}
+                        yp_3^{T} - p_2^{T} \\
+                        p_1^{T} - xp_3^{T} \\
+                        y^{'}p_3^{'T} - p_2^{'T} \\
+                        p_1^{'T} - x'p_3^{'T}
+                        \end{bmatrix}X = 0\]
+                        A mátrixot egy \textit{A}-val jelöljük:
+                        \[AX = 0\]
+                        Ez az egyenlőség pedig szinguláris értékek felbontásával (SVD) oldható, megkapva a pont közelítő, 3D koordinátáját.
+                        \item 
                 \end{enumerate}
 
     \chapter{Forrás}
@@ -250,6 +318,6 @@
             \item \url{https://www.mathworks.com/help/images/ref/rigidtform3d.html}
             \item \url{https://www.storyofmathematics.com/rigid-transformation/}
             \item \url{https://staff.fnwi.uva.nl/r.vandenboomgaard/ComputerVision/LectureNotes/CV/StereoVision/triangulation.html}
-            \item \url{https://www.cs.cmu.edu/~16385/s17/Slides/11.4_Triangulation.pdf}
+            \item \url{https://e-learning.ujs.sk/pluginfile.php/23450/mod_resource/content/1/05-SztereoKamera.pdf}
         \end{itemize}
 \end{document}
