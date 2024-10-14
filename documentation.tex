@@ -23,7 +23,7 @@
     A Structure from motion (SfM) folyamat segítségével 3D rekonstrukciót hajthatunk végre egy képpár segítségével.
 
     \begin{enumerate}
-        \item Két kép közötti ritka ponthalmazok megfeleltetése (pontmegfeleltetés): az első kép sarkainak azonosítása a \textit{detectMinEigenFeatures} függvénnyel, majd azok követése a második képre a \textit{vision.PointTracker} segítségével.
+        \item Két kép közötti ritka ponthalmazok megfeleltetése (pontmegfeleltetés): az első kép sarokpontjainak azonosítása a \textit{detectMinEigenFeatures} függvénnyel, majd azok követése a második képre a \textit{vision.PointTracker} segítségével.
         \item Az esszenciális mátrix becslése \textit{estimateEssentialMatrix} használatával.
         \item Kamera elmozdulásának kiszámítása \textit{estrelpose} függvénnyel.
         \item Két kép közötti sűrű ponthalmazok megfeleltetése (pontmegfeleltetés): több pont kinyeréséhez újra kell detektálni a pontokat a \textit{detectMinEigenFeatures} függvény segítségével a \textit{'MinQuality'} opciót használva. Ezt követi a sűrű ponthalmaz követése a második képre a \textit{vision.PointTracker} használatával.
@@ -54,13 +54,16 @@
                       A kamera kalibrációja során kapott kamera paramétereket és a torzítási együtthatókat felhasználva kiszámítjuk a bemeneti kép minden pixelének eredeti pozícióját. Az egyes pixelek pozícióját az alábbi torzítások módosítják:
                         \begin{itemize}
                             \item \textbf{Radiális torzítás} = kiváltó oka, hogy a lencse szélén áthaladó fény jobban törik, mint a lencse közepén környezetében áthaladó fény. Ez kiszámolható:\\
-                                \[x_d = x_u(1 + k_1r^2 + k_2r^4)\]
-                                \[y_d = y_u(1 + k_1r^2 + k_2r^4)\]
-                                (Ahol $x_u, y_u$ = torzulásmentes koordináták; $x_d, y_d$ = torzított koordináták; $k_1, k_2$ = radiális torzítási együtthatók; $r^2 = x_u^2 + y_u^2$)
+                                \[x_r = x(1 + k_1r^2 + k_2r^4)\]
+                                \[y_r = y(1 + k_1r^2 + k_2r^4)\]
+                                (Ahol $x_r, y_r$ = radiális torzulásmentes koordináták; $x, y$ = torzított koordináták; $k_1, k_2$ = radiális torzítási együtthatók; $r^2 = x^2 + y^2$)
                             \item \textbf{Tangenciális fordítás} = előfordul, ha a kameraszenzor és a lencse nem állnak tökéletesen párhuzamosan. Ez kiszámolható:\\
-                                \[x_d = 2p_1x_uy_u + p_2(r^2+2x_u^2)\]
-                                \[y_d = 2p_2x_uy_u + p_1(r^2 + 2y_u^2)\]
-                                (Ahol $x_u, y_u$ = torzulásmentes koordináták; $x_d, y_d$ = torzított koordináták; $p_1, p_2$ = tangenciális torzítási együtthatók; $r^2 = x_u^2 + y_u^2$)\\\\
+                                \[x_t = 2p_1xy + p_2(r^2+2x^2)\]
+                                \[y_t = 2p_2xy + p_1(r^2 + 2y^2)\]
+                                (Ahol $x_t, y_t$ = tangenciális torzulásmentes koordináták; $x, y$ = torzított koordináták; $p_1, p_2$ = tangenciális torzítási együtthatók; $r^2 = x^2 + y^2$)\\\\
+                                A végső együttható értékének kiszámítása:
+                                \[x_f = x_r + x_t\]
+                                \[y_f = y_r + y_t\]
                     Az egyes pixelek korrigált helyének kiszámítása nem egész számú értékeket is előállít. Mivel a nem egész szám nem lehet pixel koordináta, ezért bilineáris interpolációt is végre kell hajtani. A bilineáris interpoláció során, a legközelebbi négy szomszédot felhasználva először lineáris interpolációt hajtunk végre az egyik irányba (pl. az x tengely mentén), majd pedig a másik irányba (az y tengely mentén):
                         \[out_P = I_1(1 - \Delta X)(1 - \Delta Y) + I_2 (\Delta X)(1 - \Delta Y) + I_3(1 - \Delta X)(\Delta Y) + I_4(\Delta X)(\Delta Y)\]
                         (Ahol $I_1, I_2, I_3, I_4$ = a szomszédos négy koordináta intenzitása az eredeti, torzított képen; $\Delta X, \Delta Y$ = a nem egész értékű koordinátákkal rendelkező vizsgált pixel és a vizsgált pixelhez legközelebb eső, egész értékű koordinátákkal rendelkező szomszédai közötti távolság; $out_P$ = végeredményként kapott pixel intenzitás)\\\\
@@ -122,7 +125,7 @@
                     \item \textit{plot} = létrehoz kétdimenziós grafikont.
                     \item \textit{selectStrongest(featurePoints, N)} = visszaadja az \textit{N} legerősebb (talán ez az intenzitások különbségének nagyságát jelenti) jellemzőpontot (nálunk sarokpontok lesznek) a megadott \textit{featurePoints} változóból.
                     \item \textit{tracker = vision.PointTracker(MaxBidirectionalError=value1, NumPyramidLevels=value2)} = létrehoz egy Kanade-Lucas-Tomasi (KLT) algoritmus szerint működő pontkövető objektumot.\\
-                    A KLT algoritmus kifejezetten jól működik olyan objektumok követésére, amely nem változtat alakot, valamint egyedi és részletes textúrával rendelkezik. A KLT algoritmus a Lucas-Kanade (LK) optikai áramlás becslés algoritmuson alapul. Az optikai áramlás az objetumok egy látszólagos/vizuális elmozdulása (nem feltétlenül egyezik meg a valós elmozdulással). Általános feltételezése, hogy egy objektum pixeleinek intenzitása elmozdulástól függetlenül állandó:
+                    A KLT algoritmus kifejezetten jól működik olyan objektumok követésére, amely nem változtat alakot, valamint egyedi és részletes textúrával rendelkezik. A KLT algoritmus a Lucas-Kanade (LK) optikai áramlás becslés algoritmuson alapul. Az optikai áramlás az objetumok egy látszólagos/vizuális elmozdulása (nem feltétlenül egyezik meg a valós elmozdulással). Általános feltételezése, hogy egy objektum megfigyelt pixeleinek intenzitása elmozdulástól függetlenül állandó:
                     \[I(x,y,t) = I(x + u,y + v,t + 1)\]
                     Ahol:
                     \begin{itemize}
@@ -177,10 +180,10 @@
                     Az $x_1$ egy adott pont homogén koordinátája az első képen, míg az $x_2$ ugyanazon pont homogén koordinátája a második képen (mindkét esetben a kamera koordináta rendszerében, nem pedig pixel koordináta rendszerben):
                     \[x_1 = \begin{bmatrix}x_1\\y_1\\1\end{bmatrix}, x_2 = \begin{bmatrix}x_2\\y_2\\1\end{bmatrix}\]
                     A két képpont kapcsolatát leíró egyenlőség szerint, ha a két képpont ugyanazon pontot írják le, akkor az esszenciális mátrix ($E$) segítségével kifejezhető a köztük lévő kapcsolat. A képlet szétbontva:\\
-                    \[\begin{bmatrix}x_1&y_1&1\end{bmatrix}\begin{bmatrix}F_{11}&F_{12}&F_{13}\\F_{21}&F_{22}&F_{23}\\F_{31}&F_{32}&F_{33}\end{bmatrix}\begin{bmatrix}x_2\\y_2\\1\end{bmatrix} = 0\]
+                    \[\begin{bmatrix}x_1&y_1&1\end{bmatrix}\begin{bmatrix}E_{11}&E_{12}&E_{13}\\E_{21}&E_{22}&E_{23}\\E_{31}&E_{32}&E_{33}\end{bmatrix}\begin{bmatrix}x_2\\y_2\\1\end{bmatrix} = 0\]
                         \hspace{3cm} $\overset{\uparrow}{ismert}$ \hspace{1cm} $\overset{\uparrow}{ismeretlen}$ \hspace{0.1cm} $\overset{\uparrow}{ismert}$\\
                     Ha elvégezzük az ismert elemek szorzatát, majd szétválasztjuk az ismeretlen az ismert részektől:
-                    \[A\begin{bmatrix}F_{11}\\\vdots\\F_{33}\end{bmatrix} = 0\]
+                    \[A\begin{bmatrix}E_{11}\\\vdots\\E_{33}\end{bmatrix} = 0\]
                     Ezt szinguláris érték felbontással végezhetjük el, megkapva az esszenciális mátrixot. Ezt a módszert 8 pont algoritmusnak hívják, amely minimum 8 pontpárt és normalizált koordinátákat követel meg.
                     Az esszenciális mátrix két alapvető elemből áll:
                     \[E = [t]_xR\]
@@ -286,7 +289,16 @@
                         A mátrixot egy \textit{A}-val jelöljük:
                         \[AX = 0\]
                         Ez az egyenlőség pedig szinguláris értékek felbontásával (SVD) oldható, megkapva a pont közelítő, 3D koordinátáját.
-                        \item 
+                        \item \textit{numPixels = size(var, dim1) * size(var, dim2)} = a \textit{size} függvény visszatérési értéke a \textit{var} változó mérete a meghatározott \textit{dim1} dimenzióban (\textit{1} = sorok száma, \textit{2} = oszlopok száma). A mi példánkban az egyenlettel lekérjük a kép magasságát és szélességét, ezek szorzatával pedig kiszámítsuk a kép pixeleinek számát.
+                        \item \textit{allColors = reshape(I1, [numPixels, 3])} = a megadott képet átalakítjuk egy tömbbé, amelynek minden sora a kép egy pixele, az oszlopai pedig az adott sorban található pixel RGB értékét adja meg.
+                        \item \textit{colorIdx = sub2ind([size(I1, 1), size(I1, 2)], round(matchedPoints1(:,2)),round(matchedPoints1(:, 1)))} = A megfeleltetett pontok indexeinek kiolvasása. Az indexeket subscript (sor és oszlop indexek) típusból lineáris indexszé (az index egy darab szám, amely az oszlopok mentén haladva a legelső elemtől kezdődik) alakítjuk.
+                        \item \textit{color = allColors(colorIdx, :)} = kiolvassuk a megfeleltetett pontok színeit az indexvektor segítségével.
+                        \item \textit{pointCloud(xyzPoints, colors)} = meghatározott színekkel létrehozza a pontfelhő objektumot.
+                        \item \textit{figure\\
+                                      plotCamera(Size=cameraSize, Color="r", Label="1", Opacity=0);\\
+                                      hold on\\
+                                      grid on\\
+                                      plotCamera(AbsolutePose=relPose, Size=cameraSize,Color="b", Label="2", Opacity=0)} = kirajzoljuk az első kamerát az origóba piros színnel, majd pedig a második kamerát kék színnel az első kamera pozíciójától a kiszámolt relatív pozícióba.
                 \end{enumerate}
 
     \chapter{Forrás}
