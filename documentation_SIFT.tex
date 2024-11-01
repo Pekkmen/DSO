@@ -6,6 +6,7 @@
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{graphicx}
+\usepackage{enumitem}
 
 \graphicspath{ {./latex_images} }
 
@@ -78,7 +79,12 @@
                         A Shi és Tomasi féle minimum sajátérték algoritmus forgatásfüggetlen (ugyanis az elforgatott sarokpont megtartsa a sarokpont tulajdonságait), viszont nem skála-invariáns (invariáns = független) (pl.: ha egy fix ablakméretet használunk miközben a képet kicsinyítsük [elméletben nagy méretű nagyítás esetén is érvényes], akkor a sarokpont "kisímultnak" tűnhet).\\
                         \includegraphics[scale=0.8]{small_big_window_diff.png}
                         A képből látszik, hogy kicsi ablakméretet használva a sarkot inkább egy élnek, mint saroknak detektálnánk, míg nagy ablakméret esetén a sarkosság egyértelmű.\\
-
+                            \begin{enumerate}
+                                    \item Előállítunk egy Gauss-skála teret. Ehhez ismét egy képpiramis-szerűséget hozunk létre. Az első szinthez fogjuk az eredeti \textit{I(x,y)} képet és különböző értékű Gauss szűrőket alkalmazunk rajta. Így kapunk kép kupacot, amelyen az egyik irányba haladva, az eredeti kép egyre inkább elmosódott példányait kapjuk. Ez az első szintet az első oktávnak (\textit{octave} hívják. A következő szinthez, azaz a második oktávhoz az eredeti kép méretét a felére csökkentsük (TÖBB FORRÁS KELL HOGY TÉNYLEG A FELÉRE CSÖKKEN-E), és ezen ugyanúgy elvégezzük a különböző mértékű elmosást. Így hozunk létre több oktávot (az oktávok számát a kép eredeti felbontása határozza meg). FOLYTATÁS medium és OpenCV oldal szerint!!!)
+                            \[L(x,y,\sigma) = G(x,y,\sigma) * I(x,y)\]
+                            ahol $G$ a Gauss függvény, amely meghatározza a $\sigma$ mértékű elmosódást:
+                            \[G(x,y,\sigma) = {1\over2\pi \sigma ^2}e^{-(x^2+y^2)/2\sigma^2}\]
+                        \end{enumerate}
 
                     \item \textit{imshow(image, InitialMagnification = value)} = a meghatározott kép megjelenítése \textit{value}\%-os megnagyításban.
                     \item \textit{hold on} = a következőkben végrehajtott grafikus (pl.: grafikonok kirajzolása, stb.) parancsokat a legutolsó, aktuális ábrára fogja rárajzolni.
@@ -295,5 +301,6 @@
             \item \url{https://www.mathworks.com/help/vision/ref/detectsiftfeatures.html}
             \item \url{https://docs.opencv.org/3.4/da/df5/tutorial_py_sift_intro.html}
             \item \url{https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf}
+            \item \url{https://www.geeksforgeeks.org/describe-the-concept-of-scale-invariant-feature-transform-sift/}
         \end{itemize}
 \end{document}
