@@ -6,7 +6,6 @@
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{graphicx}
-\usepackage{enumitem}
 
 \graphicspath{ {./latex_images} }
 
@@ -79,11 +78,50 @@
                         A Shi és Tomasi féle minimum sajátérték algoritmus forgatásfüggetlen (ugyanis az elforgatott sarokpont megtartsa a sarokpont tulajdonságait), viszont nem skála-invariáns (invariáns = független) (pl.: ha egy fix ablakméretet használunk miközben a képet kicsinyítsük [elméletben nagy méretű nagyítás esetén is érvényes], akkor a sarokpont "kisímultnak" tűnhet).\\
                         \includegraphics[scale=0.8]{small_big_window_diff.png}
                         A képből látszik, hogy kicsi ablakméretet használva a sarkot inkább egy élnek, mint saroknak detektálnánk, míg nagy ablakméret esetén a sarkosság egyértelmű.\\
+                        A SIFT lépései:\\
                             \begin{enumerate}
-                                    \item Előállítunk egy Gauss-skála teret. Ehhez ismét egy képpiramis-szerűséget hozunk létre. Az első szinthez fogjuk az eredeti \textit{I(x,y)} képet és különböző értékű Gauss szűrőket alkalmazunk rajta. Így kapunk kép kupacot, amelyen az egyik irányba haladva, az eredeti kép egyre inkább elmosódott példányait kapjuk. Ez az első szintet az első oktávnak (\textit{octave} hívják. A következő szinthez, azaz a második oktávhoz az eredeti kép méretét a felére csökkentsük (TÖBB FORRÁS KELL HOGY TÉNYLEG A FELÉRE CSÖKKEN-E), és ezen ugyanúgy elvégezzük a különböző mértékű elmosást. Így hozunk létre több oktávot (az oktávok számát a kép eredeti felbontása határozza meg). FOLYTATÁS medium és OpenCV oldal szerint!!!)
-                            \[L(x,y,\sigma) = G(x,y,\sigma) * I(x,y)\]
-                            ahol $G$ a Gauss függvény, amely meghatározza a $\sigma$ mértékű elmosódást:
-                            \[G(x,y,\sigma) = {1\over2\pi \sigma ^2}e^{-(x^2+y^2)/2\sigma^2}\]
+                                    \item Gauss-skálatér előállítása. Ehhez ismét egy képpiramis-szerűséget hozunk létre. Az első szinthez az eredeti \textit{I(x,y)} képen különböző erősségű Gauss szűrőket alkalmazunk. Így kapunk egy kép kupacot, amelyen az egyik irányba haladva, az eredeti kép egyre inkább elmosódott példányait kapjuk. Ez az első szintet az első oktávnak (\textit{octave}) hívják. A következő szinthez, azaz a második oktávhoz az eredeti kép méretét a felére csökkentsük, és ezen ugyanúgy elvégezzük a különböző mértékű elmosásokat. Így hozunk létre több oktávot (az oktávok számát a kép eredeti felbontása határozza meg), amelyek a piramis szintjeit alkotják.\\
+                                    \[L(x,y,\sigma) = G(x,y,\sigma) * I(x,y)\]
+                                    ahol $G$ a Gauss függvény, amely meghatározza a $\sigma$ mértékű elmosódást:
+                                    \[G(x,y,\sigma) = {1\over2\pi \sigma ^2}e^{-(x^2+y^2)/2\sigma^2}\]
+                                    Miután elkészült a képpiramis, az egyes oktávokon belül található, különböző mértékben elmosott képeket kivonjuk egymásból (\textit{Difference of Gaussian}):\\
+                                    \includegraphics[scale=0.5]{DOG.png}
+                                    \[D(x,y,\sigma) = L(x,y,k\sigma) - L(x,y,\sigma)\]
+                                    ahol az egyes L értékek a különböző mértékben elmosott képek.
+                                    Az így kapott képeken lokális szélsőértékeket keresünk pixelszomszédságok vizsgálatával. A vizsgált pixelt összehasonlítsuk a saját szintjén található 8 közvetlen szomszédjával, valamint az alatta és felette lévő szinteken található  9-9 szomszédos pixellel. Ha az adott pixel intenzitása nagyobb vagy kisebb, mint a 26 szomszédjáé, akkor a vizsgált pixel szélsőérték és egyben potenciális kulcspont.\\
+                                    \begin{center}
+                                        \includegraphics[scale=0.3]{extrema_check.png}
+                                    \end{center}
+                                    Következő lépésben Taylor-sort alkalmazva pontosítsuk a szélsőértékek pozícióját. A potenciális kulcspontok között vannak gyenge kontrasztú pontok. A gyenge kontrasztú pontok nem elég stabilak, nem zajállóak, nehezen megkülönböztetheőek, vagy akár maguk is zajok lehetnek. Emiatt, ha egy pont intenzitása nem éri el az előre meghatározott kontraszt küszöbértéket, akkor eldobjuk. A következő nem stabil pontok amelyeket ki kell szűrnünk azok az élek. Az élek kiszűréséhez 2x2 ún. Hess mátrixot (\textit{H}) használnak, melynek a sajátértékeinek az aránya mondja meg, hogy a vizsgált kulcspont egy él-e vagy sem. Ha ez az arány nagyobb, mint az előre meghatározott él küszöbérték, akkor a vizsgált kulcspont valószínűleg élhez tartozik, emiatt eldobjuk.
+                                        \[H = \begin{bmatrix} D_{xx} D_{xy} \\ D_{xy} D_{yy} \end{bmatrix}\]
+                                        \[Tr(H) = D_{xx} + D_{yy} = \alpha + \beta\]
+                                        \[Det(H) = D_{xx}D_{yy} - (D_{xy})^2 = \alpha\beta\]
+                                    ahol:
+                                    \begin{itemize}
+                                        \item $\alpha$ = a H mátrix nagyobb sajátértéke
+                                        \item $\beta$ = a H mátrix kisebb sajátértéke
+                                        \item $Tr(H)$ = a H mátrix nyoma
+                                        \item $Det(H)$ = a H mátrix determinánsa
+                                    \end{itemize}
+                                    Legyen \textit{r} az arány $\alpha$ és $\beta$ között: $\alpha = r\beta$. Ekkor:
+                                    \[{Tr(H)^2\over{Det(H)}} = {(\alpha + \beta)^2\over{\alpha\beta}} = {(r\beta + \beta)^2\over{r\beta^2}} = {(r + 1)^2\over{r}}\]
+                                    ${(r + 1)^2\over{r}}$ minimum, ha a két sajátérték megegyezik (tehát \textit{r} = 1), és az \textit{r} értékkel együtt növekszik. Ebből megállapíthatjuk, hogy a két sajátérték aránya egy bizonyos küszöbérték ($r$) alatt van-e:
+                                    \[{Tr(H)^2\over{Det(H)}} < {(r + 1)^2\over{r}}\]
+
+                                    \item Orientáció hozzárendelése. Mikor kulcsopontokat találtunk az első lépésben, azt is megtudtuk, hogy melyik skálaszinten találhatóak ezek a pontok, azaz tudjuk a skálázásukat, emiatt a kulcspontjaink skálainvariánsok. A következő lépés, a kulcspontok orientációjainak a kiszámítása, hogy a pontjaink forgatás invariánsok is legyenek. Ehhez a kulcspontok skálázásukkal arányos régióin belül minden pixelnél gradiens nagyságot és irányt számolunk:
+                                            \[m(x,y) = \sqrt{(L(x+1,y) - L(x-1,y))^2 + (L(x,y+1) - L(x,y-1))^2}\]
+                                            \[\theta(x,y)=tan^{-1}\left({(L(x,y+1) - L(x,y-1))\over{(L(x+1,y) - L(x-1,y))}}\right)\]
+                                    ahol:
+                                    \begin{itemize}
+                                        \item $m(x,y)$ = gradiens nagysága
+                                        \item $\theta(x,y)$ = gradiens iránya
+                                        \item $L(x,y)$ = a Gauss-simítással kapott pixelintenzitás az adott pozícióban
+                                    \end{itemize}
+                                    Ezeket a kulcspont körüli pixelorientációkat egy orientációs hisztogramba rendezzük. Ez a hisztogram 36 csoportból áll, ahol minden csoport a 360 fokos térből egy 10 fokos szögtartományt képvisel. A pixelorientációk gradiens nagyságukkal és egy Gauss súlyozással súlyozva kerülnek az irányuknak megfelelő hisztogramtartományba (így mindegyik pixelorientáció a nagyságával és a kulcsponthoz való közelségével lesz súlyozva). Pl.: ha egy pixelorientáció 18.6 fokos, akkor a 10-19 tartományba fog kerülni:
+                                    \begin{center}
+                                        \includegraphics[scale=0.7]{orientation_histogram.png}
+                                    \end{center}
+                                    A hisztogramból kiválasztjuk a legnagyobb értékű tartományt és ennek a tartománynak a középpontja lesz a kulcspont domináns iránya. Ha a hisztogramban több csúcs is található amelyek nagysága egy bizonyos küszöbértéken belül van a fő csúcshoz képest (pl.: a fenti képen 80\%), akkor létrehozunk egy új kulcspontot az adott orientációval. Tehát ugyanazon pozícióval és skálázással jelenlévő kulcspontjaink is lehetnek, amelyek csak az irányukban különböznek.
                         \end{enumerate}
 
                     \item \textit{imshow(image, InitialMagnification = value)} = a meghatározott kép megjelenítése \textit{value}\%-os megnagyításban.
