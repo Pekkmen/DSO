@@ -80,7 +80,7 @@
                         A képből látszik, hogy kicsi ablakméretet használva a sarkot inkább egy élnek, mint saroknak detektálnánk, míg nagy ablakméret esetén a sarkosság egyértelmű.\\
                         A SIFT lépései:\\
                             \begin{enumerate}
-                                \item Gauss-skálatér előállítása. Ehhez ismét egy képpiramis-szerűséget hozunk létre. Az első szinthez az eredeti \textit{I(x,y)} képen különböző erősségű Gauss szűrőket alkalmazunk. Így kapunk egy kép kupacot, amelyen az egyik irányba haladva, az eredeti kép egyre inkább elmosódott példányait kapjuk. Ez az első szintet az első oktávnak (\textit{octave}) hívják. A következő szinthez, azaz a második oktávhoz az eredeti kép méretét a felére csökkentsük, és ezen ugyanúgy elvégezzük a különböző mértékű elmosásokat. Így hozunk létre több oktávot (az oktávok számát a kép eredeti felbontása határozza meg), amelyek a piramis szintjeit alkotják.\\
+                                \item \textbf{Gauss-skálatér előállítása}. Ehhez ismét egy képpiramis-szerűséget hozunk létre. Az első szinthez az eredeti \textit{I(x,y)} képen különböző erősségű Gauss szűrőket alkalmazunk. Így kapunk egy kép kupacot, amelyen az egyik irányba haladva, az eredeti kép egyre inkább elmosódott példányait kapjuk. Ez az első szintet az első oktávnak (\textit{octave}) hívják. A következő szinthez, azaz a második oktávhoz az eredeti kép méretét a felére csökkentsük, és ezen ugyanúgy elvégezzük a különböző mértékű elmosásokat. Így hozunk létre több oktávot (az oktávok számát a kép eredeti felbontása határozza meg), amelyek a piramis szintjeit alkotják.\\
                                     \[L(x,y,\sigma) = G(x,y,\sigma) * I(x,y)\]
                                     ahol $G$ a Gauss függvény, amely meghatározza a $\sigma$ mértékű elmosódást:
                                     \[G(x,y,\sigma) = {1\over2\pi \sigma ^2}e^{-(x^2+y^2)/2\sigma^2}\]
@@ -108,7 +108,7 @@
                                     ${(r + 1)^2\over{r}}$ minimum, ha a két sajátérték megegyezik (tehát \textit{r} = 1), és az \textit{r} értékkel együtt növekszik. Ebből megállapíthatjuk, hogy a két sajátérték aránya egy bizonyos küszöbérték ($r$) alatt van-e:
                                     \[{Tr(H)^2\over{Det(H)}} < {(r + 1)^2\over{r}}\]
 
-                                \item Orientáció hozzárendelése. Mikor kulcsopontokat találtunk az első lépésben, azt is megtudtuk, hogy melyik skálaszinten találhatóak ezek a pontok, azaz tudjuk a skálázásukat, emiatt a kulcspontjaink skálainvariánsok. A következő lépés, a kulcspontok orientációjainak a kiszámítása, hogy a pontjaink forgatás invariánsok is legyenek. Ehhez a kulcspontok skálázásukkal arányos régióin belül minden pixelnél gradiens nagyságot és irányt számolunk:
+                                \item \textbf{Orientáció hozzárendelése}. Mikor kulcsopontokat találtunk az első lépésben, azt is megtudtuk, hogy melyik skálaszinten találhatóak ezek a pontok, azaz tudjuk a skálázásukat, emiatt a kulcspontjaink skálainvariánsok. A következő lépés, a kulcspontok orientációjainak a kiszámítása, hogy a pontjaink forgatás invariánsok is legyenek. Ehhez a kulcspontok skálázásukkal arányos régióin belül minden pixelnél gradiens nagyságot és irányt számolunk:
                                             \[m(x,y) = \sqrt{(L(x+1,y) - L(x-1,y))^2 + (L(x,y+1) - L(x,y-1))^2}\]
                                             \[\theta(x,y)=tan^{-1}\left({(L(x,y+1) - L(x,y-1))\over{(L(x+1,y) - L(x-1,y))}}\right)\]
                                     ahol:
@@ -122,7 +122,7 @@
                                         \includegraphics[scale=0.7]{orientation_histogram.png}
                                     \end{center}
                                     A hisztogramból kiválasztjuk a legnagyobb értékű tartományt és ennek a tartománynak a középpontja lesz a kulcspont domináns iránya. Ha a hisztogramban több csúcs is található amelyek nagysága egy bizonyos küszöbértéken belül van a fő csúcshoz képest (pl.: a fenti képen 80\%), akkor létrehozunk egy új kulcspontot az adott orientációval. Tehát ugyanazon pozícióval és skálázással jelenlévő kulcspontjaink is lehetnek, amelyek csak az irányukban különböznek. Ezen lépés után az összes jellemzőponthoz tartozni fog pozíció, skála, irány és magnitúdó.
-                                    \item Kulcspont leíró készítése. A leíró az egy olyan vektor, amely a kulcspont környezetét úgy írja le, hogy az a lehető legmegkülönböztethetőbb legyen, miközben invariáns a nézőpont- és megvilágításváltozásokkal szemben. Ehhez a kulcspont körüli 16x16-os méretű régiót vizsgáljuk, amit felosztunk 16db 4x4-es alrégiókra:\\
+                                \item \textbf{Kulcspont leíró készítése}. A leíró az egy olyan vektor, amely a kulcspont környezetét úgy írja le, hogy az a lehető legmegkülönböztethetőbb legyen, miközben invariáns a nézőpont- és megvilágításváltozásokkal szemben. Ehhez a kulcspont körüli 16x16-os méretű régiót vizsgáljuk, amit felosztunk 16db 4x4-es alrégiókra:\\
                                     \begin{center}
                                         \includegraphics[scale=0.6]{descriptor_region.png}
                                     \end{center}
@@ -135,12 +135,20 @@
                                         \includegraphics[scale=0.5]{descriptor_weighted.png}
                                     \end{center}
                                     A 16 darab 4x4-es cella hisztogramját végül sorba rendezzük, így kapva egy 128 elemű vektort, amely egy adott kulcspont deszkriptoraként/leírójaként szolgál.\\
-                                    A kapott leírót normalizáljuk:
-                                    \[NORMALIZÁLÁS KÉPLET\]
-                                    Jelenleg az eljárás globális megvilágításváltozásra nem érzékeny, ha az megvilágításváltozás azonos mértékben érinti az összes képpontot, ugyanis a gradiens számolása a pixelek intenzitásának a különbségéből történik. Azonban a nem lináris, lokális megvilágításváltozás hatására lehetnek területek, amelyeket a változás nagyobb mértékben érint, így a gradiensük magnitúdója is nagyobb lesz. Hogy ezen nagy magnitúdójú gradienseknek ne legyen túl nagy befolyása, küszöböljük őket:
-                                    \[i''_i = \begin{cases}0.2 & \text{ha } d'_i > 0.2 \\d'_i & \text{ha } d'_i \leq 0.2\end{cases}\]
-                                    FOLYTATÁS A TANULMÁNY SZERINT
-
+                                    A jelenlegi eredmény globális megvilágításváltozásra nem érzékeny, ha a megvilágításváltozás azonos mértékben érinti az összes képpontot, ugyanis a gradiens számolása a pixelek intenzitásának a különbségéből történik. Azonban a nem lináris, lokális megvilágításváltozás hatására lehetnek területek, amelyeket a változás nagyobb mértékben érint, így a gradiensük magnitúdója is nagyobb lesz. Hogy ezen nagy magnitúdójú gradienseknek ne legyen túl nagy befolyása, tovább dolgozzuk őket:
+                                    \begin{enumerate}
+                                        \item A leíró vektort normalizáljuk:
+                                            \[\|d \|_2 = \sqrt{ \sum_{i=1}^{128} d_i^2 }\]
+                                            \[d'_i = \frac{d_i}{\|d\|_2} \text{, ahol} \quad i = 1, 2, \dots, 128\]
+                                            ahol $\|d \|_2$ a vektor normája, $d'_i$ a vektor egy normalizált komponense.
+                                        \item A komponensek küszöbölése: 
+                                            \[d''_i = \begin{cases}0.2 & \text{ha } d'_i > 0.2 \\d'_i & \text{ha } d'_i \leq 0.2\end{cases}\]
+                                        \item Újabb normalizálás:
+                                            \[\|d''\|_2 = \sqrt{ \sum_{i=1}^{128} (d''_i)^2 }\]
+                                            \[d'''_i = \frac{d''_i}{\|d''\|_2} \text{, ahol} \quad i = 1, 2, \dots, 128\]
+                                            ahol $\|d'' \|_2$ a vektor normája, $d'''_i$ a vektor egy normalizált komponense.
+                                    \end{enumerate}
+                                \item \textbf{Kulcspontok megfeleltetése}.
                             \end{enumerate}
 
                     \item \textit{imshow(image, InitialMagnification = value)} = a meghatározott kép megjelenítése \textit{value}\%-os megnagyításban.
