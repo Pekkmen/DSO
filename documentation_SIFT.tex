@@ -148,7 +148,9 @@
                                             \[d'''_i = \frac{d''_i}{\|d''\|_2} \text{, ahol} \quad i = 1, 2, \dots, 128\]
                                             ahol $\|d'' \|_2$ a vektor normája, $d'''_i$ a vektor egy normalizált komponense.
                                     \end{enumerate}
-                                \item \textbf{Kulcspontok megfeleltetése}.
+                                    \item \textbf{Kulcspontok megfeleltetése}. A pontmegfeleltetéshez ezek után rendelkezésre áll egy adatbázisnyi kulcspont leíró. Első lépésként megkeressük azt a kulcspontot, amelynek leíró vektora a második képen a legkisebb euklideszi távolságra van a vizsgált kulcspont leíró vektorától. Ezzel a megoldással önmagában az a probléma, hogy a vizsgált ponthoz legközelebb eső szomszéd, nem bizos, hogy a vizsgált pont tényleges párja. Az is lehetséges, hogy az adott pontnak nincs is párja, mert az eleve egy adott képre specifikus zajból adódott vagy esetleg a tényleges párja nem is látszódik a második képen. Ennek kiküszöbölésére a megoldás, hogy összehasonlítjuk a legközelebbi szomszéd és a második legközelebbi szomszéd távolságát. A második legközelebbi szomszéd a vizsgált kulcsponthoz legközelebb eső olyan kulcspont, amely nem a vizsgált kulcsponthoz tartozik (tehát egy szándékos rossz párosítást csinálunk). A helyes pontmegfeleltetések közötti távolságnak jelentősen kisebbnek kell lennie, mint a helytelen pontmegfeleltetések közötti távolságnak. Tehát hamis egyezések esetén valószínűleg számos más hamis egyezés lesz hasonló távolságon belül. (Azaz ezzel kiszűrhetők a könnyen félreérthető pontok. Azt hiszem).\\
+                                    Jelen esetben minden olyan megfeleltetést eldobunk ahol a távolságok aránya nagyobb, mint 0.8:
+                                    \[\text{A megfeleltetés jó, ha } \frac{\textit{legközelebbi szomszéd}}{\textit{2.legközelebbi szomszéd}} <= 0.8\]
                             \end{enumerate}
 
                     \item \textit{imshow(image, InitialMagnification = value)} = a meghatározott kép megjelenítése \textit{value}\%-os megnagyításban.
