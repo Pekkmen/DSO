@@ -89,8 +89,12 @@
                             \item \textit{$D_{xx}$}, \textit{$D_{yy}$}, \textit{$D_{xy}$} = másodrendű képpont deriváltak horizontális, vertikális és keresztirányban
                             \item \textit{w} = dobozszűrő ablakára vonatkozó súly (általában 0.9)
                         \end{itemize}
-                        \item \textbf{Piramis-szerű skálatér felépítése} = A SIFT algoritmushoz hasonlóan egy piramis-szerű skálateret építünk. Jelentős különbség azonban, hogy a dobozszűrő alkalmazásának és az integrál kép készítésnek köszönhetően nem kell az egyes oktávokban a kép méretét csökkenteni, hanem elég a szűrő méretét növelni (ez gyorsabb számolást eredményez).
-
+                        \item \textbf{Skálatér felépítése} = A SIFT algoritmushoz hasonlóan egy piramis-szerű skálateret építünk. Jelentős különbség azonban, hogy a dobozszűrő alkalmazásának és az integrál kép használatának köszönhetően nem kell az oktávokban a kép méretét csökkenteni, hanem elég a szűrő méretét növelni, valamint a mintavételi intervallum is oktávonként duplázható (ezek gyorsabb számítást eredményeznek). A kulcspontok lokalizációjához ún. nem maximális elnyomást (\textit{\textbf{N}on-\textbf{M}aximum \textbf{S}uppression}) használ. Az NMS egy 3×3×3 térbeli szomszédságot vizsgál (két szomszédos skálán és a képen belül), és eltávolít minden olyan pontot, amely nem maximum. Csak a lokális maximumokat hagyja meg, mivel ezek számítanak potenciális kulcspontoknak. Az így kapott Hess-mátrix determináns maximumok pozícióját és skáláját interpoláljuk a képtérben és a skálatérben, megkapva a kulcspont végső pozícióját és skáláját.
+                        \item \textbf{Kulcspontorientációk meghatározása} = A forgatás invariancia érdekében reprodukálható orientációkat keresünk (tehát könnyen és megbízhatóan azonosíthatók kép változtatásától függetlenül). Először ún. \textit{Haar-wavelet response}-t számolunk az \textit{x}, valamint az \textit{y} irányban a kulcspont körüli \textit{6s} sugarú szomszédságban (az \textit{s} a kulcspont skálájával közvetlenül arányos). Ehhez egy Haar szűrőt használunk, amely egy fekete és egy fehér részből álló négyszögletes "ablak". Ezt az ablakot végighúzzuk a vizsgált tengely mentén miközben intenzitáskülönbség mérünk a fehér és a fekete területek között. \\
+                        \includegraphics[scale=0.4]{lena_haar.png}\\
+                        A vizsgált szomszédság, a mintavételezés intervalluma és a filter mérete is a kulcspont skálájától függ. Nagy skála esetén az ablak mérete is nagy, így ezeket a számításokat ismét jelentősen felgyorsítja az integrál képek használata. Miután megkaptuk az x irányú és az y irányú intenzitáskülönbségeket, Gauss súlyozzuk őket. Ezt követően lesznek különböző irányba mutató vektoraink. Ezeket a vektorokat egy előre meghatározott szögtartományt ($\frac{\pi}{3}$) lefedő, forgatható csúszó ablak területén belül összegezük. Az előző lépést ismételjük, míg le nem fedtük a teljes teret. Ezen összegzések új vektorokat hoznak létre, amelyek közül a maximális összegzett vektor nagysága és iránya fogja meghatározza a kulcspont orientációját.\\
+                        \includegraphics[scale=0.5]{haar_vectors.png}\\
+                        \item \textbf{Kulcspont leírók létrehozása} = A deszkriptorok létrehozásához az első lépés egy olyan, skálázástól függő méretű (\textit{20s}),négyszögletes terület meghatározása, amelynek középpontjában a vizsgált kulcspont található és az orientációja is megegyezik az említett kulcsponttal. Ezt a négyszöget felosztjuk további 4x4-es alrégiókra. Minden alrégióhoz néhány egyszerű jellemzőt számolunk ki 5×5-ös szabályos mintavételi pontokon. Ezekhez ismét \textit{Haar-wavelet response}-t számolunk: Legyen \textit{$d_x$} az x-tengely mentén, \textit{$d_y$} az y-tengely mentén (a tengelyek a négyzet orientációjához van viszonyítva). Ezeket Gauss súlyozzuk (segít a különböző hibák elleni robosztusságban) a kulcsponttal a középpontban. A \textit{$d_x$} és \textit{$d_y$} értékeket összegezzük az egyes alrégiókban, ezek alkotják majd a deszkriptor vektor első részét. (FOLYTATÁS ELŐTT ELLENŐRZÉS)
                     \end{enumerate}
                         
 
@@ -305,11 +309,14 @@
             \item \url{https://www.storyofmathematics.com/rigid-transformation/}
             \item \url{https://staff.fnwi.uva.nl/r.vandenboomgaard/ComputerVision/LectureNotes/CV/StereoVision/triangulation.html}
             \item \url{https://e-learning.ujs.sk/pluginfile.php/23450/mod_resource/content/1/05-SztereoKamera.pdf}
+        \end{itemize}
         \textbf{SURF}
+        \begin{itemize}
             \item \url{https://en.wikipedia.org/wiki/Summed-area_table}
             \item \url{https://www.cs.umd.edu/class/spring2020/cmsc426-0201/files/14_SURF.pdf}
             \item \url{https://link.springer.com/chapter/10.1007/11744023_32}
             \item \url{https://docs.opencv.org/3.4/df/dd2/tutorial_py_surf_intro.html}
             \item \url{https://medium.com/@deepanshut041/introduction-to-surf-speeded-up-robust-features-c7396d6e7c4e}
+            \item \url{https://www.mathworks.com/help/vision/ref/detectsurffeatures.html}
         \end{itemize}
 \end{document}
