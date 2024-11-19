@@ -83,12 +83,14 @@
                         \includegraphics[scale=0.4]{Summed_area_table.png}\\
                         \[\sum = A - B - C + D\]
                         A kulcspontok megkeresésére a teljesítmény optimalizálása érdekében SURF algoritmus a Hess-mátrixot használja. A kulcspontok pozícióját és a skáláját is a Hess mátrix determinánsának közelítésével számoljuk. A Hess determináns approximálásához a SURF a további teljesítménynövelés eléréséhez ún. dobozszűrőt (\textit{box filter}) használ. A doboz szűrő egy olyan szűrő, amely minden, egy előre meghatározott ablakon belüli képpontok értékét a környező pixelek átlagaival helyettesíti. Ennél a folyamatnál nagyon hasznos az integrált kép, ugyanis bármely képpontra meg tudjuk mondani az őt megelőző pixelek értékeinek összegét (gyorsítva a számolást). Ezen lépés után a Hess mátrix determinánsának approximáltja:
-                        \[det(H_{approx}) = D_{xx}D_{yy} - (wD_{xy})^2\]
+                        \[det(\mathcal{H}_{approx}) = D_{xx}D_{yy} - (wD_{xy})^2\]
                         ahol:
                         \begin{itemize}
                             \item \textit{$D_{xx}$}, \textit{$D_{yy}$}, \textit{$D_{xy}$} = másodrendű képpont deriváltak horizontális, vertikális és keresztirányban
-                            \item \textit{w} = dobozszűrő ablakára vonatkozó súly (általban 0.9)
+                            \item \textit{w} = dobozszűrő ablakára vonatkozó súly (általában 0.9)
                         \end{itemize}
+                        \item \textbf{Piramis-szerű skálatér felépítése} = A SIFT algoritmushoz hasonlóan egy piramis-szerű skálateret építünk. Jelentős különbség azonban, hogy a dobozszűrő alkalmazásának és az integrál kép készítésnek köszönhetően nem kell az egyes oktávokban a kép méretét csökkenteni, hanem elég a szűrő méretét növelni (ez gyorsabb számolást eredményez).
+
                     \end{enumerate}
                         
 
